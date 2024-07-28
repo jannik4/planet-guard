@@ -1,4 +1,6 @@
-use super::{ApplyVelocity, SpaceShip, Steering, UpdateSpaceShip};
+use super::{
+    ApplyVelocity, Health, SpaceShip, SpaceShipBundle, Steering, UpdateSpaceShip, Velocity,
+};
 use crate::AppState;
 use bevy::prelude::*;
 
@@ -23,6 +25,38 @@ impl Plugin for PlayerPlugin {
 
 #[derive(Debug, Component)]
 pub struct Player;
+
+#[derive(Bundle)]
+pub struct PlayerBundle {
+    pub player: Player,
+    pub health: Health,
+    pub space_ship: SpaceShipBundle,
+}
+
+impl PlayerBundle {
+    pub fn new(
+        position: Vec3,
+        rotation: f32,
+
+        meshes: &mut Assets<Mesh>,
+        materials: &mut Assets<ColorMaterial>,
+    ) -> Self {
+        Self {
+            player: Player,
+            health: Health(10.0),
+            space_ship: SpaceShipBundle::new(
+                0b1,
+                Velocity(Vec3::ZERO),
+                position,
+                rotation,
+                Color::srgb(0.6, 0.6, 1.4),
+                Color::srgb(0.0, 0.0, 2.0),
+                meshes,
+                materials,
+            ),
+        }
+    }
+}
 
 fn update(
     mut space_ships: Query<&mut SpaceShip, With<Player>>,

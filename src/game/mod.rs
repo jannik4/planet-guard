@@ -52,6 +52,9 @@ pub struct Collider {
 #[derive(Debug, Component)]
 pub struct Health(pub f32);
 
+#[derive(Debug, Component)]
+pub struct Home;
+
 fn setup(
     mut commands: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
@@ -77,32 +80,14 @@ fn setup(
     ));
 
     commands.spawn((
-        SpaceShipBundle::new(
-            0b1,
-            Velocity(Vec3::ZERO),
+        PlayerBundle::new(
             Vec3::new(10.0, 100.0, 0.0),
             0.0,
-            Color::srgb(0.6, 0.6, 1.4),
-            Color::srgb(0.0, 0.0, 2.0),
             &mut meshes,
             &mut materials,
         ),
-        Player,
         StateScoped(AppState::Game),
     ));
-
-    for i in 0..10 {
-        let alpha = (i as f32 / 10.0) * std::f32::consts::TAU;
-        commands.spawn((
-            EnemyBundle::new(
-                Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
-                alpha + std::f32::consts::FRAC_PI_2,
-                &mut meshes,
-                &mut materials,
-            ),
-            StateScoped(AppState::Game),
-        ));
-    }
 
     // Star
     commands.spawn((
@@ -134,11 +119,11 @@ fn setup(
             20.0,
             0.0,
             Mass(100_000.0),
-            // Color::srgb(0.2, 2.0, 0.5),
             Color::srgb(0.2, 0.5, 2.0),
             &mut meshes,
             &mut materials,
         ),
+        Home,
         StateScoped(AppState::Game),
     ));
 
@@ -148,7 +133,6 @@ fn setup(
             40.0,
             0.8,
             Mass(100_000.0),
-            // Color::srgb(0.2, 0.5, 2.0),
             Color::srgb(1.8, 0.4, 0.9),
             &mut meshes,
             &mut materials,

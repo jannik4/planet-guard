@@ -1,9 +1,10 @@
 use super::{
-    explosion, ApplyVelocity, Health, Player, SpaceShip, SpaceShipBundle, SpawnExplosion, Steering,
+    ApplyVelocity, Health, Home, Player, SpaceShip, SpaceShipBundle, SpawnExplosion, Steering,
     UpdateSpaceShip, Velocity,
 };
 use crate::AppState;
 use bevy::prelude::*;
+use rand::Rng;
 
 pub struct EnemyPlugin;
 
@@ -14,6 +15,7 @@ impl Plugin for EnemyPlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         // Update
+        app.add_systems(Update, spawn_enemies.run_if(in_state(AppState::Game)));
         app.add_systems(
             Update,
             update
@@ -26,13 +28,23 @@ impl Plugin for EnemyPlugin {
 
 #[derive(Debug, Component)]
 pub struct Enemy {
+    target: Option<EnemyTarget>,
     last_shot: f32,
 }
 
 impl Enemy {
     pub fn new() -> Self {
-        Self { last_shot: 0.0 }
+        Self {
+            target: None,
+            last_shot: 0.0,
+        }
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+enum EnemyTarget {
+    Player,
+    Home,
 }
 
 #[derive(Bundle)]
@@ -67,14 +79,42 @@ impl EnemyBundle {
     }
 }
 
+fn spawn_enemies(
+    mut commands: Commands,
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+
+    enemies: Query<(), With<Enemy>>,
+) {
+    let enemies_alive = enemies.iter().count();
+    if let Some(n) = 5usize.checked_sub(enemies_alive) {
+        for _ in 0..n {
+            let alpha = rand::thread_rng().gen_range(0.0..std::f32::consts::TAU);
+            commands.spawn((
+                EnemyBundle::new(
+                    Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
+                    alpha + std::f32::consts::FRAC_PI_2,
+                    &mut meshes,
+                    &mut materials,
+                ),
+                StateScoped(AppState::Game),
+            ));
+        }
+    }
+}
+
 fn update(
     mut commands: Commands,
     time: Res<Time>,
     mut explosions: EventWriter<SpawnExplosion>,
     mut enemies: Query<(Entity, &Transform, &Health, &mut SpaceShip, &mut Enemy), Without<Player>>,
     players: Query<&Transform, With<Player>>,
+    homes: Query<&Transform, With<Home>>,
 ) {
     let Ok(player) = players.get_single() else {
+        return;
+    };
+    let Ok(home) = homes.get_single() else {
         return;
     };
 
@@ -88,7 +128,21 @@ fn update(
             continue;
         }
 
-        let direction = player.translation - transform.translation;
+        let target = enemy.target.get_or_insert_with(|| {
+            let distance_to_player = Vec3::distance(player.translation, transform.translation);
+            let distance_to_home = Vec3::distance(home.translation, transform.translation);
+            if distance_to_player < distance_to_home {
+                EnemyTarget::Player
+            } else {
+                EnemyTarget::Home
+            }
+        });
+        let (target, throttle_threshold, brake_threshold, shoot_threshold) = match *target {
+            EnemyTarget::Player => (*player, 100.0, 50.0, 250.0),
+            EnemyTarget::Home => (*home, 300.0, 300.0, 500.0),
+        };
+
+        let direction = target.translation - transform.translation;
         let distance = direction.length();
         let direction = direction.normalize();
         let angle_between = direction
@@ -100,9 +154,9 @@ fn update(
             angle if angle < -5.0 => Steering::Left,
             _ => Steering::None,
         };
-        space_ship.throttle = distance > 100.0;
-        space_ship.brake = distance < 50.0;
-        space_ship.shoot = distance < 200.0
+        space_ship.throttle = distance > throttle_threshold;
+        space_ship.brake = distance < brake_threshold;
+        space_ship.shoot = distance < shoot_threshold
             && angle_between.abs() < 10.0
             && time.elapsed_seconds() - enemy.last_shot > 0.5;
 

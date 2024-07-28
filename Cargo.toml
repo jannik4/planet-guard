@@ -18,3 +18,6 @@ opt-level = 3
 [dependencies]
 bevy = "0.14"
 bevy_asset_loader = { version = "0.21.0", default-features = false }
+
+rand = "0.8.5"
+getrandom = { version = "0.2.15", features = ["js"] }
