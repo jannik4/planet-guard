@@ -14,7 +14,16 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
-fn update(mut gizmos: Gizmos, time: Res<Time>) {
+fn update(
+    mut gizmos: Gizmos,
+    time: Res<Time>,
+    mouse_input: Res<ButtonInput<MouseButton>>,
+    mut next_state: ResMut<NextState<AppState>>,
+) {
+    if mouse_input.just_pressed(MouseButton::Left) {
+        next_state.set(AppState::Game);
+    }
+
     let sin = time.elapsed_seconds().sin() * 50.;
     gizmos.line_2d(Vec2::Y * -sin, Vec2::splat(-80.), RED);
     gizmos.ray_2d(Vec2::Y * sin, Vec2::splat(80.), LIME);
