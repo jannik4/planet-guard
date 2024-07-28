@@ -124,6 +124,7 @@ fn setup(
             &mut materials,
         ),
         Home,
+        Health(1000.0),
         StateScoped(AppState::Game),
     ));
 

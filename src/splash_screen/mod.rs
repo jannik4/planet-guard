@@ -32,9 +32,6 @@ impl Default for SplashScreen {
     }
 }
 
-#[derive(Debug, Component)]
-struct CameraMarker;
-
 fn splash_screen(
     time: Res<Time>,
     keyboard_input: Res<ButtonInput<KeyCode>>,

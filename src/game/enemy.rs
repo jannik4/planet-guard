@@ -1,6 +1,6 @@
 use super::{
-    ApplyVelocity, Health, Home, Player, SpaceShip, SpaceShipBundle, SpawnExplosion, Steering,
-    UpdateSpaceShip, Velocity,
+    ApplyVelocity, Collider, Health, Home, Planet, Player, SpaceShip, SpaceShipBundle,
+    SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::AppState;
 use bevy::prelude::*;
@@ -18,7 +18,7 @@ impl Plugin for EnemyPlugin {
         app.add_systems(Update, spawn_enemies.run_if(in_state(AppState::Game)));
         app.add_systems(
             Update,
-            update
+            (update, despawn_enemies)
                 .before(UpdateSpaceShip)
                 .before(ApplyVelocity)
                 .run_if(in_state(AppState::Game)),
@@ -104,10 +104,8 @@ fn spawn_enemies(
 }
 
 fn update(
-    mut commands: Commands,
     time: Res<Time>,
-    mut explosions: EventWriter<SpawnExplosion>,
-    mut enemies: Query<(Entity, &Transform, &Health, &mut SpaceShip, &mut Enemy), Without<Player>>,
+    mut enemies: Query<(&Transform, &mut SpaceShip, &mut Enemy), Without<Player>>,
     players: Query<&Transform, With<Player>>,
     homes: Query<&Transform, With<Home>>,
 ) {
@@ -118,16 +116,7 @@ fn update(
         return;
     };
 
-    for (entity, transform, health, mut space_ship, mut enemy) in &mut enemies {
-        if health.0 <= 0.0 {
-            explosions.send(SpawnExplosion {
-                position: transform.translation,
-                color: space_ship.color(),
-            });
-            commands.entity(entity).despawn();
-            continue;
-        }
-
+    for (transform, mut space_ship, mut enemy) in &mut enemies {
         let target = enemy.target.get_or_insert_with(|| {
             let distance_to_player = Vec3::distance(player.translation, transform.translation);
             let distance_to_home = Vec3::distance(home.translation, transform.translation);
@@ -162,6 +151,39 @@ fn update(
 
         if space_ship.shoot {
             enemy.last_shot = time.elapsed_seconds();
+        }
+    }
+}
+
+fn despawn_enemies(
+    mut commands: Commands,
+    mut explosions: EventWriter<SpawnExplosion>,
+    mut enemies: Query<(Entity, &Transform, &Collider, &Health, &SpaceShip), With<Enemy>>,
+    planets_and_stars: Query<
+        (&Transform, &Collider),
+        (Without<Enemy>, Or<(With<Planet>, With<Star>)>),
+    >,
+) {
+    for (entity, transform, collider, health, space_ship) in &mut enemies {
+        let mut despawn = health.0 <= 0.0;
+
+        if !despawn {
+            for (obj_transform, obj_collider) in &planets_and_stars {
+                if Vec3::distance_squared(transform.translation, obj_transform.translation)
+                    <= f32::powi(collider.radius + obj_collider.radius, 2)
+                {
+                    despawn = true;
+                    break;
+                }
+            }
+        }
+
+        if despawn {
+            explosions.send(SpawnExplosion {
+                position: transform.translation,
+                color: space_ship.color(),
+            });
+            commands.entity(entity).despawn();
         }
     }
 }
