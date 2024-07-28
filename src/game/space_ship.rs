@@ -1,4 +1,4 @@
-use super::{ApplyVelocity, KeepInMap, MaxVelocity, Velocity};
+use super::{ApplyVelocity, BulletBundle, KeepInMap, MaxVelocity, Velocity};
 use crate::AppState;
 use bevy::{
     prelude::*,
@@ -18,15 +18,30 @@ impl Plugin for SpaceShipPlugin {
         app.add_systems(
             Update,
             update
+                .in_set(UpdateSpaceShip)
                 .before(ApplyVelocity)
                 .run_if(in_state(AppState::Game)),
         );
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, SystemSet)]
+pub struct UpdateSpaceShip;
+
 #[derive(Debug, Component)]
 pub struct SpaceShip {
-    pub rotation: f32,
+    rotation: f32,
+    pub throttle: bool,
+    pub brake: bool,
+    pub steering: Steering,
+    pub shoot: bool,
+}
+
+#[derive(Debug)]
+pub enum Steering {
+    Left,
+    Right,
+    None,
 }
 
 impl SpaceShip {
@@ -54,7 +69,13 @@ impl SpaceShipBundle {
         meshes: &mut Assets<Mesh>,
         materials: &mut Assets<ColorMaterial>,
     ) -> Self {
-        let space_ship = SpaceShip { rotation };
+        let space_ship = SpaceShip {
+            rotation,
+            throttle: false,
+            brake: false,
+            steering: Steering::None,
+            shoot: false,
+        };
         Self {
             velocity,
             max_velocity: MaxVelocity(300.0),
@@ -96,8 +117,49 @@ fn mesh() -> Mesh {
     )
 }
 
-fn update(mut space_ships: Query<(&SpaceShip, &mut Transform)>) {
-    for (space_ship, mut transform) in &mut space_ships {
+fn update(
+    mut commands: Commands,
+    time: Res<Time>,
+    mut space_ships: Query<(&mut SpaceShip, &mut Velocity, &mut Transform)>,
+
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
+) {
+    for (mut space_ship, mut velocity, mut transform) in &mut space_ships {
+        space_ship.rotation += match space_ship.steering {
+            Steering::Left => 3.0 * time.delta_seconds(),
+            Steering::Right => -3.0 * time.delta_seconds(),
+            Steering::None => 0.0,
+        };
+
+        if space_ship.throttle {
+            **velocity += space_ship.rot_quat()
+                * Vec3::new(0.0, 1.0, 0.0)
+                * 300.0
+                * 1.0
+                * time.delta_seconds();
+        }
+        if space_ship.brake {
+            let brake = if velocity.length() < 50.0 {
+                **velocity * 0.99 * time.delta_seconds()
+            } else {
+                **velocity * 0.9 * time.delta_seconds()
+            };
+            **velocity -= brake;
+        }
+
+        if space_ship.shoot {
+            commands.spawn(BulletBundle::new(
+                10.0,
+                Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
+                transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),
+                Color::srgb(0.0, 0.0, 2.0),
+                &mut meshes,
+                &mut materials,
+            ));
+            space_ship.shoot = false;
+        }
+
         transform.rotation = space_ship.rot_quat();
     }
 }
