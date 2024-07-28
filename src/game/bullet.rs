@@ -17,6 +17,11 @@ impl Plugin for BulletPlugin {
 }
 
 #[derive(Debug, Component)]
+pub struct BulletMissileLock {
+    pub target: Entity,
+}
+
+#[derive(Debug, Component)]
 pub struct Bullet {
     pub collider_filter: u32,
     pub damage: f32,
@@ -65,11 +70,31 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 }
 
 fn update(
-    mut bullets: Query<(Entity, &Bullet, &Velocity, &mut Transform)>,
+    time: Res<Time>,
+    mut bullets: Query<(
+        Entity,
+        &Bullet,
+        Option<&BulletMissileLock>,
+        &mut Velocity,
+        &mut Transform,
+    )>,
     mut objects: Query<(&Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
+    targets: Query<&Transform, Without<Bullet>>,
     mut commands: Commands,
 ) {
-    for (entity, bullet, velocity, mut transform) in &mut bullets {
+    for (entity, bullet, lock, mut velocity, mut transform) in &mut bullets {
+        if let Some(lock) = lock {
+            if let Ok(target) = targets.get(lock.target) {
+                let target_velocity =
+                    (target.translation - transform.translation).normalize() * velocity.length();
+                **velocity = Vec3::lerp(
+                    **velocity,
+                    target_velocity,
+                    1.0 - f32::exp(f32::ln(0.9) * 60.0 * time.delta_seconds()),
+                );
+            }
+        }
+
         transform.rotation = rot_from_velocity(**velocity);
 
         let mut despawn = transform.translation.length() > 1024.0;

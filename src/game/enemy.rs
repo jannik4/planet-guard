@@ -107,17 +107,17 @@ fn update(
     time: Res<Time>,
     mut enemies: Query<(&Transform, &mut SpaceShip, &mut Enemy), Without<Player>>,
     players: Query<&Transform, With<Player>>,
-    homes: Query<&Transform, With<Home>>,
+    homes: Query<(Entity, &Transform), With<Home>>,
 ) {
     let Ok(player) = players.get_single() else {
         return;
     };
-    let Ok(home) = homes.get_single() else {
+    let Ok((home_entity, home)) = homes.get_single() else {
         return;
     };
 
     for (transform, mut space_ship, mut enemy) in &mut enemies {
-        let target = enemy.target.get_or_insert_with(|| {
+        let target = *enemy.target.get_or_insert_with(|| {
             let distance_to_player = Vec3::distance(player.translation, transform.translation);
             let distance_to_home = Vec3::distance(home.translation, transform.translation);
             if distance_to_player < distance_to_home {
@@ -126,12 +126,13 @@ fn update(
                 EnemyTarget::Home
             }
         });
-        let (target, throttle_threshold, brake_threshold, shoot_threshold) = match *target {
-            EnemyTarget::Player => (*player, 100.0, 50.0, 250.0),
-            EnemyTarget::Home => (*home, 300.0, 300.0, 500.0),
-        };
+        let (target_transform, throttle_threshold, brake_threshold, shoot_threshold, reload) =
+            match target {
+                EnemyTarget::Player => (*player, 100.0, 50.0, 250.0, 0.5),
+                EnemyTarget::Home => (*home, 300.0, 300.0, 500.0, 1.0),
+            };
 
-        let direction = target.translation - transform.translation;
+        let direction = target_transform.translation - transform.translation;
         let distance = direction.length();
         let direction = direction.normalize();
         let angle_between = direction
@@ -147,7 +148,11 @@ fn update(
         space_ship.brake = distance < brake_threshold;
         space_ship.shoot = distance < shoot_threshold
             && angle_between.abs() < 10.0
-            && time.elapsed_seconds() - enemy.last_shot > 0.5;
+            && time.elapsed_seconds() - enemy.last_shot > reload;
+        space_ship.shoot_missile_lock = match target {
+            EnemyTarget::Player => None,
+            EnemyTarget::Home => Some(home_entity),
+        };
 
         if space_ship.shoot {
             enemy.last_shot = time.elapsed_seconds();

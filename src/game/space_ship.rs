@@ -1,4 +1,6 @@
-use super::{ApplyVelocity, BulletBundle, Collider, KeepInMap, MaxVelocity, Velocity};
+use super::{
+    ApplyVelocity, BulletBundle, BulletMissileLock, Collider, KeepInMap, MaxVelocity, Velocity,
+};
 use crate::AppState;
 use bevy::{
     prelude::*,
@@ -37,6 +39,7 @@ pub struct SpaceShip {
     pub brake: bool,
     pub steering: Steering,
     pub shoot: bool,
+    pub shoot_missile_lock: Option<Entity>,
 }
 
 impl SpaceShip {
@@ -88,6 +91,7 @@ impl SpaceShipBundle {
             brake: false,
             steering: Steering::None,
             shoot: false,
+            shoot_missile_lock: None,
         };
         Self {
             collider: Collider {
@@ -166,7 +170,7 @@ fn update(
         }
 
         if space_ship.shoot {
-            commands.spawn(BulletBundle::new(
+            let mut cmds = commands.spawn(BulletBundle::new(
                 collider.group ^ 0b11,
                 10.0,
                 Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
@@ -175,6 +179,9 @@ fn update(
                 &mut meshes,
                 &mut materials,
             ));
+            if let Some(target) = space_ship.shoot_missile_lock {
+                cmds.insert(BulletMissileLock { target });
+            }
             space_ship.shoot = false;
         }
 
