@@ -1,4 +1,4 @@
-use super::Velocity;
+use super::{ApplyVelocity, KeepInMap, MaxVelocity, Velocity};
 use crate::AppState;
 use bevy::{
     prelude::*,
@@ -15,7 +15,12 @@ impl Plugin for SpaceShipPlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         // Update
-        app.add_systems(Update, update.run_if(in_state(AppState::Game)));
+        app.add_systems(
+            Update,
+            update
+                .before(ApplyVelocity)
+                .run_if(in_state(AppState::Game)),
+        );
     }
 }
 
@@ -34,6 +39,8 @@ impl SpaceShip {
 pub struct SpaceShipBundle {
     pub space_ship: SpaceShip,
     pub velocity: Velocity,
+    pub max_velocity: MaxVelocity,
+    pub keep_in_map: KeepInMap,
     pub mesh: MaterialMesh2dBundle<ColorMaterial>,
 }
 
@@ -50,6 +57,8 @@ impl SpaceShipBundle {
         let space_ship = SpaceShip { rotation };
         Self {
             velocity,
+            max_velocity: MaxVelocity(300.0),
+            keep_in_map: KeepInMap,
             mesh: MaterialMesh2dBundle {
                 mesh: meshes.add(mesh()).into(),
                 material: materials.add(color),

@@ -1,4 +1,4 @@
-use super::{SpaceShip, Velocity};
+use super::{ApplyVelocity, BulletBundle, SpaceShip, Velocity};
 use crate::AppState;
 use bevy::prelude::*;
 
@@ -11,7 +11,12 @@ impl Plugin for PlayerPlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         // Update
-        app.add_systems(Update, update.run_if(in_state(AppState::Game)));
+        app.add_systems(
+            Update,
+            update
+                .before(ApplyVelocity)
+                .run_if(in_state(AppState::Game)),
+        );
     }
 }
 
@@ -19,11 +24,15 @@ impl Plugin for PlayerPlugin {
 pub struct Player;
 
 fn update(
+    mut commands: Commands,
     time: Res<Time>,
-    mut space_ships: Query<(&mut SpaceShip, &mut Velocity), With<Player>>,
+    mut space_ships: Query<(&mut SpaceShip, &mut Velocity, &Transform), With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+
+    mut meshes: ResMut<Assets<Mesh>>,
+    mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    let Ok((mut space_ship, mut velocity)) = space_ships.get_single_mut() else {
+    let Ok((mut space_ship, mut velocity, transform)) = space_ships.get_single_mut() else {
         return;
     };
 
@@ -43,8 +52,16 @@ fn update(
         };
         **velocity -= brake;
     }
-    if velocity.length() > 300.0 {
-        **velocity = velocity.normalize() * 300.0;
+
+    if keyboard_input.just_pressed(KeyCode::Space) {
+        commands.spawn(BulletBundle::new(
+            10.0,
+            Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
+            transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),
+            Color::srgb(0.0, 0.0, 2.0),
+            &mut meshes,
+            &mut materials,
+        ));
     }
 }
 

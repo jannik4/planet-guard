@@ -1,10 +1,12 @@
 mod background;
-mod gravitiy;
+mod bullet;
+mod gravity;
 mod planet;
 mod player;
 mod space_ship;
+mod velocity;
 
-use self::{gravitiy::*, planet::*, player::*, space_ship::*};
+use self::{bullet::*, gravity::*, planet::*, player::*, space_ship::*, velocity::*};
 use crate::AppState;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -22,9 +24,11 @@ impl Plugin for GamePlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         app.add_plugins((
+            velocity::VelocityPlugin,
+            gravity::GravityPlugin,
             planet::PlanetPlugin,
+            bullet::BulletPlugin,
             space_ship::SpaceShipPlugin,
-            gravitiy::GravityPlugin,
             player::PlayerPlugin,
             background::BackgroundPlugin,
         ));
@@ -80,16 +84,16 @@ fn setup(
             ..default()
         },
         Star,
-        Mass(1000.0),
+        Mass(200_000.0),
         StateScoped(AppState::Game),
     ));
 
     commands.spawn((
         PlanetBundle::new(
             150.0,
-            1.0,
+            10.0,
             0.5,
-            Mass(100.0),
+            Mass(100_000.0),
             Color::srgb(2.0, 1.5, 0.2),
             &mut meshes,
             &mut materials,
@@ -100,10 +104,11 @@ fn setup(
     commands.spawn((
         PlanetBundle::new(
             300.0,
-            2.0,
+            20.0,
             0.0,
-            Mass(100.0),
-            Color::srgb(0.2, 2.0, 0.5),
+            Mass(100_000.0),
+            // Color::srgb(0.2, 2.0, 0.5),
+            Color::srgb(0.2, 0.5, 2.0),
             &mut meshes,
             &mut materials,
         ),
@@ -113,10 +118,11 @@ fn setup(
     commands.spawn((
         PlanetBundle::new(
             450.0,
-            4.0,
+            40.0,
             0.8,
-            Mass(100.0),
-            Color::srgb(0.2, 0.5, 2.0),
+            Mass(100_000.0),
+            // Color::srgb(0.2, 0.5, 2.0),
+            Color::srgb(1.8, 0.4, 0.9),
             &mut meshes,
             &mut materials,
         ),

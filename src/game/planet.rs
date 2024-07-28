@@ -1,4 +1,4 @@
-use super::gravitiy::Mass;
+use super::gravity::Mass;
 use crate::AppState;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
