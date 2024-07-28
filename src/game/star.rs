@@ -28,7 +28,10 @@ impl StarBundle {
     ) -> Self {
         Self {
             star: Star,
-            collider: Collider { radius: 16.0 },
+            collider: Collider {
+                radius: 16.0,
+                group: u32::MAX,
+            },
             mass,
             mesh: MaterialMesh2dBundle {
                 mesh: meshes.add(Circle::new(16.0)).into(),

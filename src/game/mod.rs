@@ -1,6 +1,7 @@
 mod background;
 mod bullet;
 mod enemy;
+mod explosion;
 mod gravity;
 mod planet;
 mod player;
@@ -9,14 +10,14 @@ mod star;
 mod velocity;
 
 use self::{
-    bullet::*, enemy::*, gravity::*, planet::*, player::*, space_ship::*, star::*, velocity::*,
+    bullet::*, enemy::*, explosion::*, gravity::*, planet::*, player::*, space_ship::*, star::*,
+    velocity::*,
 };
 use crate::AppState;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
     render::camera::ScalingMode,
-    sprite::MaterialMesh2dBundle,
 };
 
 pub struct GamePlugin;
@@ -36,6 +37,7 @@ impl Plugin for GamePlugin {
             space_ship::SpaceShipPlugin,
             player::PlayerPlugin,
             enemy::EnemyPlugin,
+            explosion::ExplosionPlugin,
             background::BackgroundPlugin,
         ));
     }
@@ -44,13 +46,11 @@ impl Plugin for GamePlugin {
 #[derive(Debug, Component)]
 pub struct Collider {
     pub radius: f32,
+    pub group: u32,
 }
 
 #[derive(Debug, Component)]
 pub struct Health(pub f32);
-
-#[derive(Debug, Component)]
-pub struct Star;
 
 fn setup(
     mut commands: Commands,
@@ -78,6 +78,7 @@ fn setup(
 
     commands.spawn((
         SpaceShipBundle::new(
+            0b1,
             Velocity(Vec3::ZERO),
             Vec3::new(10.0, 100.0, 0.0),
             0.0,

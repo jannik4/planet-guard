@@ -56,7 +56,10 @@ impl PlanetBundle {
         };
 
         Self {
-            collider: Collider { radius: 8.0 },
+            collider: Collider {
+                radius: 8.0,
+                group: u32::MAX,
+            },
             mass,
             mesh: MaterialMesh2dBundle {
                 mesh: meshes.add(Circle::new(8.0)).into(),

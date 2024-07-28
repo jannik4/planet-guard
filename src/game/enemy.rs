@@ -1,5 +1,6 @@
 use super::{
-    ApplyVelocity, Health, Player, SpaceShip, SpaceShipBundle, Steering, UpdateSpaceShip, Velocity,
+    explosion, ApplyVelocity, Health, Player, SpaceShip, SpaceShipBundle, SpawnExplosion, Steering,
+    UpdateSpaceShip, Velocity,
 };
 use crate::AppState;
 use bevy::prelude::*;
@@ -51,8 +52,9 @@ impl EnemyBundle {
     ) -> Self {
         Self {
             enemy: Enemy::new(),
-            health: Health(100.0),
+            health: Health(10.0),
             space_ship: SpaceShipBundle::new(
+                0b10,
                 Velocity(Vec3::ZERO),
                 position,
                 rotation,
@@ -66,15 +68,26 @@ impl EnemyBundle {
 }
 
 fn update(
+    mut commands: Commands,
     time: Res<Time>,
-    mut enemies: Query<(&Transform, &mut SpaceShip, &mut Enemy), Without<Player>>,
+    mut explosions: EventWriter<SpawnExplosion>,
+    mut enemies: Query<(Entity, &Transform, &Health, &mut SpaceShip, &mut Enemy), Without<Player>>,
     players: Query<&Transform, With<Player>>,
 ) {
     let Ok(player) = players.get_single() else {
         return;
     };
 
-    for (transform, mut space_ship, mut enemy) in &mut enemies {
+    for (entity, transform, health, mut space_ship, mut enemy) in &mut enemies {
+        if health.0 <= 0.0 {
+            explosions.send(SpawnExplosion {
+                position: transform.translation,
+                color: space_ship.color(),
+            });
+            commands.entity(entity).despawn();
+            continue;
+        }
+
         let direction = player.translation - transform.translation;
         let distance = direction.length();
         let direction = direction.normalize();

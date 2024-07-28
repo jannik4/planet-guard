@@ -31,11 +31,18 @@ pub struct UpdateSpaceShip;
 #[derive(Debug, Component)]
 pub struct SpaceShip {
     rotation: f32,
+    color: Color,
     bullet_color: Color,
     pub throttle: bool,
     pub brake: bool,
     pub steering: Steering,
     pub shoot: bool,
+}
+
+impl SpaceShip {
+    pub fn color(&self) -> Color {
+        self.color
+    }
 }
 
 #[derive(Debug)]
@@ -63,6 +70,7 @@ pub struct SpaceShipBundle {
 
 impl SpaceShipBundle {
     pub fn new(
+        collider_group: u32,
         velocity: Velocity,
         position: Vec3,
         rotation: f32,
@@ -74,6 +82,7 @@ impl SpaceShipBundle {
     ) -> Self {
         let space_ship = SpaceShip {
             rotation,
+            color,
             bullet_color,
             throttle: false,
             brake: false,
@@ -81,7 +90,10 @@ impl SpaceShipBundle {
             shoot: false,
         };
         Self {
-            collider: Collider { radius: 10.0 },
+            collider: Collider {
+                radius: 10.0,
+                group: collider_group,
+            },
             velocity,
             max_velocity: MaxVelocity(180.0),
             keep_in_map: KeepInMap,
@@ -125,12 +137,12 @@ fn mesh() -> Mesh {
 fn update(
     mut commands: Commands,
     time: Res<Time>,
-    mut space_ships: Query<(Entity, &mut SpaceShip, &mut Velocity, &mut Transform)>,
+    mut space_ships: Query<(&Collider, &mut SpaceShip, &mut Velocity, &mut Transform)>,
 
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
 ) {
-    for (entity, mut space_ship, mut velocity, mut transform) in &mut space_ships {
+    for (collider, mut space_ship, mut velocity, mut transform) in &mut space_ships {
         space_ship.rotation += match space_ship.steering {
             Steering::Left => 3.0 * time.delta_seconds(),
             Steering::Right => -3.0 * time.delta_seconds(),
@@ -155,7 +167,7 @@ fn update(
 
         if space_ship.shoot {
             commands.spawn(BulletBundle::new(
-                entity,
+                collider.group ^ 0b11,
                 10.0,
                 Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
                 transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),

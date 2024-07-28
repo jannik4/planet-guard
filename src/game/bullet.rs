@@ -18,7 +18,7 @@ impl Plugin for BulletPlugin {
 
 #[derive(Debug, Component)]
 pub struct Bullet {
-    pub owner: Entity,
+    pub collider_filter: u32,
     pub damage: f32,
 }
 
@@ -32,7 +32,7 @@ pub struct BulletBundle {
 
 impl BulletBundle {
     pub fn new(
-        owner: Entity,
+        collider_filter: u32,
         damage: f32,
         velocity: Velocity,
         position: Vec3,
@@ -42,7 +42,10 @@ impl BulletBundle {
         materials: &mut Assets<ColorMaterial>,
     ) -> Self {
         Self {
-            bullet: Bullet { owner, damage },
+            bullet: Bullet {
+                collider_filter,
+                damage,
+            },
             velocity,
             gravity_multiplier: GravityMultiplier(10.0),
             mesh: MaterialMesh2dBundle {
@@ -63,7 +66,7 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 
 fn update(
     mut bullets: Query<(Entity, &Bullet, &Velocity, &mut Transform)>,
-    mut objects: Query<(Entity, &Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
+    mut objects: Query<(&Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
     mut commands: Commands,
 ) {
     for (entity, bullet, velocity, mut transform) in &mut bullets {
@@ -71,8 +74,8 @@ fn update(
 
         let mut despawn = transform.translation.length() > 1024.0;
 
-        for (obj_entity, obj_transform, obj_collider, obj_health) in &mut objects {
-            if obj_entity == bullet.owner {
+        for (obj_transform, obj_collider, obj_health) in &mut objects {
+            if obj_collider.group & bullet.collider_filter == 0 {
                 continue;
             }
             if Vec3::distance_squared(transform.translation, obj_transform.translation)
