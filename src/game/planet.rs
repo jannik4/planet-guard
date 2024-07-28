@@ -6,10 +6,6 @@ pub struct PlanetPlugin;
 
 impl Plugin for PlanetPlugin {
     fn build(&self, app: &mut App) {
-        // Setup and cleanup
-        app.add_systems(OnEnter(AppState::Game), setup);
-        app.add_systems(OnExit(AppState::Game), cleanup);
-
         // Update
         app.add_systems(Update, update.run_if(in_state(AppState::Game)));
     }
@@ -78,12 +74,3 @@ fn update(mut planets: Query<(&mut Planet, &mut Transform)>, time: Res<Time>) {
         transform.translation = planet.position();
     }
 }
-
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-}
-
-fn cleanup(mut commands: Commands) {}

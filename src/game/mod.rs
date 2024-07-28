@@ -10,8 +10,15 @@ mod star;
 mod velocity;
 
 use self::{
-    bullet::*, enemy::*, explosion::*, gravity::*, planet::*, player::*, space_ship::*, star::*,
+    bullet::*,
+    explosion::*,
+    gravity::*,
+    planet::*,
+    player::*,
+    space_ship::*,
+    star::*,
     velocity::*,
+    // enemy::*,
 };
 use crate::AppState;
 use bevy::{
@@ -142,4 +149,4 @@ fn setup(
     ));
 }
 
-fn cleanup(mut commands: Commands) {}
+fn cleanup(mut _commands: Commands) {}

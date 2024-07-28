@@ -12,10 +12,6 @@ pub struct SpaceShipPlugin;
 
 impl Plugin for SpaceShipPlugin {
     fn build(&self, app: &mut App) {
-        // Setup and cleanup
-        app.add_systems(OnEnter(AppState::Game), setup);
-        app.add_systems(OnExit(AppState::Game), cleanup);
-
         // Update
         app.add_systems(
             Update,
@@ -188,12 +184,3 @@ fn update(
         transform.rotation = space_ship.rot_quat();
     }
 }
-
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-}
-
-fn cleanup(mut commands: Commands) {}

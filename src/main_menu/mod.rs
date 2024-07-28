@@ -54,4 +54,4 @@ fn setup(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), StateScoped(AppState::MainMenu)));
 }
 
-fn cleanup(mut commands: Commands) {}
+fn cleanup(mut _commands: Commands) {}

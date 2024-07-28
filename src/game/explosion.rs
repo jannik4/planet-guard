@@ -1,4 +1,4 @@
-use super::{Collider, GravityMultiplier, Health, Velocity};
+use super::{GravityMultiplier, Velocity};
 use crate::AppState;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 

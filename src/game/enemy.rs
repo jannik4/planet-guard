@@ -10,10 +10,6 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
-        // Setup and cleanup
-        app.add_systems(OnEnter(AppState::Game), setup);
-        app.add_systems(OnExit(AppState::Game), cleanup);
-
         // Update
         app.add_systems(Update, spawn_enemies.run_if(in_state(AppState::Game)));
         app.add_systems(
@@ -192,12 +188,3 @@ fn despawn_enemies(
         }
     }
 }
-
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-}
-
-fn cleanup(mut commands: Commands) {}
