@@ -1,4 +1,4 @@
-use super::gravity::Mass;
+use super::{gravity::Mass, Collider};
 use crate::AppState;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
@@ -33,6 +33,7 @@ impl Planet {
 #[derive(Bundle)]
 pub struct PlanetBundle {
     pub planet: Planet,
+    pub collider: Collider,
     pub mass: Mass,
     pub mesh: MaterialMesh2dBundle<ColorMaterial>,
 }
@@ -55,6 +56,7 @@ impl PlanetBundle {
         };
 
         Self {
+            collider: Collider { radius: 8.0 },
             mass,
             mesh: MaterialMesh2dBundle {
                 mesh: meshes.add(Circle::new(8.0)).into(),

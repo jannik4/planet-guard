@@ -1,4 +1,4 @@
-use super::{ApplyVelocity, GravityMultiplier, Velocity};
+use super::{ApplyVelocity, Collider, GravityMultiplier, Health, Velocity};
 use crate::AppState;
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
@@ -18,6 +18,7 @@ impl Plugin for BulletPlugin {
 
 #[derive(Debug, Component)]
 pub struct Bullet {
+    pub owner: Entity,
     pub damage: f32,
 }
 
@@ -31,6 +32,7 @@ pub struct BulletBundle {
 
 impl BulletBundle {
     pub fn new(
+        owner: Entity,
         damage: f32,
         velocity: Velocity,
         position: Vec3,
@@ -40,7 +42,7 @@ impl BulletBundle {
         materials: &mut Assets<ColorMaterial>,
     ) -> Self {
         Self {
-            bullet: Bullet { damage },
+            bullet: Bullet { owner, damage },
             velocity,
             gravity_multiplier: GravityMultiplier(10.0),
             mesh: MaterialMesh2dBundle {
@@ -60,13 +62,31 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 }
 
 fn update(
-    mut space_ships: Query<(Entity, &Bullet, &Velocity, &mut Transform)>,
+    mut bullets: Query<(Entity, &Bullet, &Velocity, &mut Transform)>,
+    mut objects: Query<(Entity, &Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
     mut commands: Commands,
 ) {
-    for (entity, _space_ship, velocity, mut transform) in &mut space_ships {
+    for (entity, bullet, velocity, mut transform) in &mut bullets {
         transform.rotation = rot_from_velocity(**velocity);
 
-        if transform.translation.length() > 1024.0 {
+        let mut despawn = transform.translation.length() > 1024.0;
+
+        for (obj_entity, obj_transform, obj_collider, obj_health) in &mut objects {
+            if obj_entity == bullet.owner {
+                continue;
+            }
+            if Vec3::distance_squared(transform.translation, obj_transform.translation)
+                <= obj_collider.radius * obj_collider.radius
+            {
+                if let Some(mut health) = obj_health {
+                    health.0 -= bullet.damage;
+                }
+                despawn = true;
+                break;
+            }
+        }
+
+        if despawn {
             commands.entity(entity).despawn();
         }
     }

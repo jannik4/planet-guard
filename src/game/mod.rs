@@ -1,12 +1,16 @@
 mod background;
 mod bullet;
+mod enemy;
 mod gravity;
 mod planet;
 mod player;
 mod space_ship;
+mod star;
 mod velocity;
 
-use self::{bullet::*, gravity::*, planet::*, player::*, space_ship::*, velocity::*};
+use self::{
+    bullet::*, enemy::*, gravity::*, planet::*, player::*, space_ship::*, star::*, velocity::*,
+};
 use crate::AppState;
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
@@ -26,14 +30,24 @@ impl Plugin for GamePlugin {
         app.add_plugins((
             velocity::VelocityPlugin,
             gravity::GravityPlugin,
+            star::StarPlugin,
             planet::PlanetPlugin,
             bullet::BulletPlugin,
             space_ship::SpaceShipPlugin,
             player::PlayerPlugin,
+            enemy::EnemyPlugin,
             background::BackgroundPlugin,
         ));
     }
 }
+
+#[derive(Debug, Component)]
+pub struct Collider {
+    pub radius: f32,
+}
+
+#[derive(Debug, Component)]
+pub struct Health(pub f32);
 
 #[derive(Debug, Component)]
 pub struct Star;
@@ -68,6 +82,7 @@ fn setup(
             Vec3::new(10.0, 100.0, 0.0),
             0.0,
             Color::srgb(0.6, 0.6, 1.4),
+            Color::srgb(0.0, 0.0, 2.0),
             &mut meshes,
             &mut materials,
         ),
@@ -75,16 +90,27 @@ fn setup(
         StateScoped(AppState::Game),
     ));
 
+    for i in 0..10 {
+        let alpha = (i as f32 / 10.0) * std::f32::consts::TAU;
+        commands.spawn((
+            EnemyBundle::new(
+                Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
+                alpha + std::f32::consts::FRAC_PI_2,
+                &mut meshes,
+                &mut materials,
+            ),
+            StateScoped(AppState::Game),
+        ));
+    }
+
     // Star
     commands.spawn((
-        MaterialMesh2dBundle {
-            mesh: meshes.add(Circle::new(16.0)).into(),
-            material: materials.add(Color::srgb(4.0, 4.0, 0.8)),
-            transform: Transform::from_translation(Vec3::new(0.0, 0.0, 0.0)),
-            ..default()
-        },
-        Star,
-        Mass(200_000.0),
+        StarBundle::new(
+            Mass(200_000.0),
+            Color::srgb(4.0, 4.0, 0.8),
+            &mut meshes,
+            &mut materials,
+        ),
         StateScoped(AppState::Game),
     ));
 
