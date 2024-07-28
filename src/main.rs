@@ -16,6 +16,7 @@ fn main() {
             meta_check: AssetMetaCheck::Never,
             ..default()
         }))
+        .insert_resource(ClearColor(Color::srgb(0.9, 0.9, 0.9)))
         .add_systems(Startup, setup)
         .run();
 }
