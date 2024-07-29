@@ -131,6 +131,10 @@ fn update(
 
     for (transform, mut space_ship, mut enemy) in &mut enemies {
         let target = *enemy.target.get_or_insert_with(|| {
+            if rand::thread_rng().gen_range(0.0..1.0) < level.enemy_force_to_home_probability {
+                return EnemyTarget::Home;
+            }
+
             let distance_to_player = Vec3::distance(player.translation, transform.translation);
             let distance_to_home = Vec3::distance(home.translation, transform.translation);
             if distance_to_player < distance_to_home {

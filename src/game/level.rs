@@ -100,6 +100,7 @@ pub struct Level {
     pub enemy_damage: f32,
 
     pub enemy_spawn_interval: f32,
+    pub enemy_force_to_home_probability: f32,
 }
 
 impl Level {
@@ -117,6 +118,7 @@ impl Level {
             enemy_damage: 10.0,
 
             enemy_spawn_interval: 5.0,
+            enemy_force_to_home_probability: 0.0,
         }
     }
 
@@ -134,6 +136,7 @@ impl Level {
             enemy_damage: 10.0,
 
             enemy_spawn_interval: 5.0,
+            enemy_force_to_home_probability: 0.1,
         }
     }
 
@@ -145,12 +148,13 @@ impl Level {
 
             home_health: Health::new(300.0),
             player_health: Health::new(20.0),
-            enemy_health: Health::new(30.0),
+            enemy_health: Health::new(20.0),
 
             player_damage: 10.0,
             enemy_damage: 10.0,
 
-            enemy_spawn_interval: 5.0,
+            enemy_spawn_interval: 4.0,
+            enemy_force_to_home_probability: 0.2,
         }
     }
 }

@@ -25,11 +25,15 @@ struct QuitTimer(Timer);
 struct QuitUi;
 
 #[derive(Debug, Component)]
+struct QuitUiText;
+
+#[derive(Debug, Component)]
 struct QuitUiProgress;
 
 fn update(
     mut quit_timer: ResMut<QuitTimer>,
     mut quit_ui: Query<&mut Visibility, With<QuitUi>>,
+    mut quit_ui_text: Query<&mut Text, With<QuitUiText>>,
     mut quit_ui_progress: Query<&mut Style, With<QuitUiProgress>>,
 
     time: Res<Time>,
@@ -39,15 +43,23 @@ fn update(
     let Ok(mut visibility) = quit_ui.get_single_mut() else {
         return;
     };
+    let Ok(mut text) = quit_ui_text.get_single_mut() else {
+        return;
+    };
     let Ok(mut style) = quit_ui_progress.get_single_mut() else {
         return;
     };
 
-    if keyboard_input.pressed(KeyCode::Escape) {
+    if keyboard_input.pressed(KeyCode::Escape) || keyboard_input.pressed(KeyCode::Backspace) {
         if quit_timer.0.tick(time.delta()).just_finished() {
             next_state.set(AppState::MainMenu);
         } else {
             *visibility = Visibility::Inherited;
+            text.sections[0].value = if keyboard_input.pressed(KeyCode::Escape) {
+                "Hold ESC to quit".to_string()
+            } else {
+                "Hold BACKSPACE to quit".to_string()
+            };
             style.width = Val::Px(300.0 * quit_timer.0.fraction_remaining());
         }
     } else {
@@ -77,13 +89,16 @@ fn setup(mut commands: Commands) {
             StateScoped(AppState::Game),
         ))
         .with_children(|parent| {
-            parent.spawn(TextBundle::from_section(
-                "Hold ESC to quit",
-                TextStyle {
-                    font_size: 30.0,
-                    color: Color::WHITE,
-                    ..default()
-                },
+            parent.spawn((
+                TextBundle::from_section(
+                    "",
+                    TextStyle {
+                        font_size: 30.0,
+                        color: Color::WHITE,
+                        ..default()
+                    },
+                ),
+                QuitUiText,
             ));
             parent.spawn((
                 NodeBundle {

@@ -1,6 +1,13 @@
 use super::{ApplyVelocity, Collider, GameState, GravityMultiplier, Health, Velocity};
-use crate::{assets::GameAssets, AppState};
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 
 pub struct BulletPlugin;
 
@@ -83,6 +90,7 @@ fn update(
     mut objects: Query<(&Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
     targets: Query<&Transform, Without<Bullet>>,
     mut commands: Commands,
+    audio_assets: Res<AudioAssets>,
 ) {
     for (entity, mut bullet, lock, mut velocity, mut transform) in &mut bullets {
         bullet.time_to_live -= time.delta_seconds();
@@ -111,6 +119,16 @@ fn update(
                 if **game_state == GameState::Running {
                     if let Some(mut health) = obj_health {
                         health.damage(bullet.damage);
+
+                        commands.spawn(AudioBundle {
+                            source: audio_assets.impact_metal_004.clone(),
+                            settings: PlaybackSettings {
+                                mode: PlaybackMode::Despawn,
+                                volume: Volume::new(0.35),
+                                speed: 4.0,
+                                ..default()
+                            },
+                        });
                     }
                 }
                 despawn = true;
