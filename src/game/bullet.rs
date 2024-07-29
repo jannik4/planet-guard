@@ -118,7 +118,9 @@ fn update(
             {
                 if **game_state == GameState::Running {
                     if let Some(mut health) = obj_health {
-                        health.damage(bullet.damage);
+                        if !(obj_collider.group & 0b100 != 0 && bullet.collider_filter & 0b1 == 0) {
+                            health.damage(bullet.damage);
+                        }
 
                         commands.spawn(AudioBundle {
                             source: audio_assets.impact_metal_004.clone(),

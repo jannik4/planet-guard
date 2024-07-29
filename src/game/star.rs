@@ -32,7 +32,7 @@ impl StarBundle {
             star: Star,
             collider: Collider {
                 radius: 16.0,
-                group: u32::MAX,
+                group: 0b100,
             },
             mass,
             mesh: MaterialMesh2dBundle {

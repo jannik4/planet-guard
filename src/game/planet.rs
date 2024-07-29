@@ -53,7 +53,7 @@ impl PlanetBundle {
         Self {
             collider: Collider {
                 radius: 8.0,
-                group: u32::MAX,
+                group: 0b100,
             },
             mass,
             mesh: MaterialMesh2dBundle {

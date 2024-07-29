@@ -1,3 +1,5 @@
+use std::u32;
+
 use super::{
     ApplyVelocity, BulletBundle, BulletMissileLock, Collider, KeepInMap, MaxVelocity, Velocity,
 };
@@ -162,7 +164,7 @@ fn update(
         if let Some(damage) = space_ship.shoot.take() {
             let mut cmds = commands.spawn((
                 BulletBundle::new(
-                    collider.group ^ 0b11,
+                    collider.group ^ u32::MAX,
                     damage,
                     20.0,
                     Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
