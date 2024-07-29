@@ -1,5 +1,5 @@
 use super::{ApplyVelocity, Collider, GravityMultiplier, Health, Velocity};
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct BulletPlugin;
@@ -41,10 +41,8 @@ impl BulletBundle {
         damage: f32,
         velocity: Velocity,
         position: Vec3,
-        color: Color,
-
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<ColorMaterial>,
+        material: Handle<ColorMaterial>,
+        assets: &GameAssets,
     ) -> Self {
         Self {
             bullet: Bullet {
@@ -54,8 +52,8 @@ impl BulletBundle {
             velocity,
             gravity_multiplier: GravityMultiplier(10.0),
             mesh: MaterialMesh2dBundle {
-                mesh: meshes.add(Rectangle::new(6.0, 2.0)).into(),
-                material: materials.add(color),
+                mesh: assets.bullet_mesh.clone(),
+                material,
                 transform: Transform::from_translation(position)
                     .with_rotation(rot_from_velocity(*velocity)),
 

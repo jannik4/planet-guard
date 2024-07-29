@@ -1,5 +1,5 @@
 use super::{gravity::Mass, Collider};
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct PlanetPlugin;
@@ -42,7 +42,7 @@ impl PlanetBundle {
         mass: Mass,
         color: Color,
 
-        meshes: &mut Assets<Mesh>,
+        assets: &GameAssets,
         materials: &mut Assets<ColorMaterial>,
     ) -> Self {
         let planet = Planet {
@@ -58,7 +58,7 @@ impl PlanetBundle {
             },
             mass,
             mesh: MaterialMesh2dBundle {
-                mesh: meshes.add(Circle::new(8.0)).into(),
+                mesh: assets.planet_mesh.clone(),
                 material: materials.add(color),
                 transform: Transform::from_translation(planet.position()),
                 ..default()

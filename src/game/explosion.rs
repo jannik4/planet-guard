@@ -1,5 +1,5 @@
 use super::{GravityMultiplier, Velocity};
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct ExplosionPlugin;
@@ -20,7 +20,7 @@ impl Plugin for ExplosionPlugin {
 #[derive(Debug, Event)]
 pub struct SpawnExplosion {
     pub position: Vec3,
-    pub color: Color,
+    pub material: Handle<ColorMaterial>,
 }
 
 #[derive(Debug, Component)]
@@ -38,9 +38,7 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 fn spawn_explosions(
     mut events: EventReader<SpawnExplosion>,
     mut commands: Commands,
-
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    assets: Res<GameAssets>,
 ) {
     for spawn in events.read() {
         commands
@@ -60,8 +58,8 @@ fn spawn_explosions(
                         velocity,
                         GravityMultiplier(10.0),
                         MaterialMesh2dBundle {
-                            mesh: meshes.add(Rectangle::new(3.0, 1.5)).into(),
-                            material: materials.add(spawn.color),
+                            mesh: assets.explosion_mesh.clone(),
+                            material: spawn.material.clone(),
                             transform: Transform::from_translation(spawn.position)
                                 .with_rotation(rot_from_velocity(*velocity)),
 

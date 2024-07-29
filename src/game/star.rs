@@ -1,3 +1,5 @@
+use crate::assets::GameAssets;
+
 use super::{gravity::Mass, Collider};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
@@ -23,7 +25,7 @@ impl StarBundle {
         mass: Mass,
         color: Color,
 
-        meshes: &mut Assets<Mesh>,
+        assets: &GameAssets,
         materials: &mut Assets<ColorMaterial>,
     ) -> Self {
         Self {
@@ -34,7 +36,7 @@ impl StarBundle {
             },
             mass,
             mesh: MaterialMesh2dBundle {
-                mesh: meshes.add(Circle::new(16.0)).into(),
+                mesh: assets.star_mesh.clone(),
                 material: materials.add(color),
                 ..default()
             },

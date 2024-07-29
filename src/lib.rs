@@ -4,6 +4,7 @@
 // Feel free to delete this line.
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
+mod assets;
 mod game;
 mod main_menu;
 mod splash_screen;
@@ -44,6 +45,7 @@ pub fn build_app() -> App {
     });
 
     app.add_plugins((
+        assets::GameAssetsPlugin,
         splash_screen::SplashScreenPlugin,
         main_menu::MainMenuPlugin,
         game::GamePlugin,

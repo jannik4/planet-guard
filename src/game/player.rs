@@ -1,7 +1,7 @@
 use super::{
     ApplyVelocity, Health, SpaceShip, SpaceShipBundle, Steering, UpdateSpaceShip, Velocity,
 };
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::prelude::*;
 
 pub struct PlayerPlugin;
@@ -30,13 +30,7 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(
-        position: Vec3,
-        rotation: f32,
-
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<ColorMaterial>,
-    ) -> Self {
+    pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
         Self {
             player: Player,
             health: Health(10.0),
@@ -45,10 +39,9 @@ impl PlayerBundle {
                 Velocity(Vec3::ZERO),
                 position,
                 rotation,
-                Color::srgb(0.6, 0.6, 1.4),
-                Color::srgb(0.0, 0.0, 2.0),
-                meshes,
-                materials,
+                assets.player_space_ship_material.clone(),
+                assets.player_bullet_material.clone(),
+                assets,
             ),
         }
     }

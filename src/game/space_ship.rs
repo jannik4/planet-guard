@@ -1,12 +1,8 @@
 use super::{
     ApplyVelocity, BulletBundle, BulletMissileLock, Collider, KeepInMap, MaxVelocity, Velocity,
 };
-use crate::AppState;
-use bevy::{
-    prelude::*,
-    render::{mesh::PrimitiveTopology, render_asset::RenderAssetUsages},
-    sprite::MaterialMesh2dBundle,
-};
+use crate::{assets::GameAssets, AppState};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct SpaceShipPlugin;
 
@@ -29,8 +25,8 @@ pub struct UpdateSpaceShip;
 #[derive(Debug, Component)]
 pub struct SpaceShip {
     rotation: f32,
-    color: Color,
-    bullet_color: Color,
+    material: Handle<ColorMaterial>,
+    bullet_material: Handle<ColorMaterial>,
     pub throttle: bool,
     pub brake: bool,
     pub steering: Steering,
@@ -39,8 +35,8 @@ pub struct SpaceShip {
 }
 
 impl SpaceShip {
-    pub fn color(&self) -> Color {
-        self.color
+    pub fn material(&self) -> Handle<ColorMaterial> {
+        self.material.clone()
     }
 }
 
@@ -73,16 +69,15 @@ impl SpaceShipBundle {
         velocity: Velocity,
         position: Vec3,
         rotation: f32,
-        color: Color,
-        bullet_color: Color,
+        material: Handle<ColorMaterial>,
+        bullet_material: Handle<ColorMaterial>,
 
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<ColorMaterial>,
+        assets: &GameAssets,
     ) -> Self {
         let space_ship = SpaceShip {
             rotation,
-            color,
-            bullet_color,
+            material: material.clone(),
+            bullet_material,
             throttle: false,
             brake: false,
             steering: Steering::None,
@@ -98,8 +93,8 @@ impl SpaceShipBundle {
             max_velocity: MaxVelocity(180.0),
             keep_in_map: KeepInMap,
             mesh: MaterialMesh2dBundle {
-                mesh: meshes.add(mesh()).into(),
-                material: materials.add(color),
+                mesh: assets.space_ship_mesh.clone(),
+                material,
                 transform: Transform::from_translation(position)
                     .with_rotation(space_ship.rot_quat()),
 
@@ -110,37 +105,12 @@ impl SpaceShipBundle {
     }
 }
 
-fn mesh() -> Mesh {
-    Mesh::new(
-        PrimitiveTopology::TriangleList,
-        RenderAssetUsages::default(),
-    )
-    .with_inserted_attribute(
-        Mesh::ATTRIBUTE_POSITION,
-        vec![
-            //
-            [0.0, 10.0, 0.0],
-            [5.0, 0.0, 0.0],
-            [-5.0, 0.0, 0.0],
-            //
-            [-5.0, 0.0, 0.0],
-            [0.0, 0.0, 0.0],
-            [-10.0, -10.0, 0.0],
-            //
-            [0.0, 0.0, 0.0],
-            [5.0, 0.0, 0.0],
-            [10.0, -10.0, 0.0],
-        ],
-    )
-}
-
 fn update(
     mut commands: Commands,
     time: Res<Time>,
     mut space_ships: Query<(&Collider, &mut SpaceShip, &mut Velocity, &mut Transform)>,
 
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    assets: Res<GameAssets>,
 ) {
     for (collider, mut space_ship, mut velocity, mut transform) in &mut space_ships {
         space_ship.rotation += match space_ship.steering {
@@ -171,9 +141,8 @@ fn update(
                 10.0,
                 Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
                 transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),
-                space_ship.bullet_color,
-                &mut meshes,
-                &mut materials,
+                space_ship.bullet_material.clone(),
+                &assets,
             ));
             if let Some(target) = space_ship.shoot_missile_lock {
                 cmds.insert(BulletMissileLock { target });

@@ -2,7 +2,7 @@ use super::{
     ApplyVelocity, Collider, Health, Home, Planet, Player, SpaceShip, SpaceShipBundle,
     SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -51,13 +51,7 @@ pub struct EnemyBundle {
 }
 
 impl EnemyBundle {
-    pub fn new(
-        position: Vec3,
-        rotation: f32,
-
-        meshes: &mut Assets<Mesh>,
-        materials: &mut Assets<ColorMaterial>,
-    ) -> Self {
+    pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
         Self {
             enemy: Enemy::new(),
             health: Health(10.0),
@@ -66,22 +60,15 @@ impl EnemyBundle {
                 Velocity(Vec3::ZERO),
                 position,
                 rotation,
-                Color::srgb(1.4, 0.6, 0.6),
-                Color::srgb(2.0, 0.0, 0.0),
-                meshes,
-                materials,
+                assets.enemy_space_ship_material.clone(),
+                assets.enemy_bullet_material.clone(),
+                assets,
             ),
         }
     }
 }
 
-fn spawn_enemies(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-
-    enemies: Query<(), With<Enemy>>,
-) {
+fn spawn_enemies(mut commands: Commands, assets: Res<GameAssets>, enemies: Query<(), With<Enemy>>) {
     let enemies_alive = enemies.iter().count();
     if let Some(n) = 5usize.checked_sub(enemies_alive) {
         for _ in 0..n {
@@ -90,8 +77,7 @@ fn spawn_enemies(
                 EnemyBundle::new(
                     Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
                     alpha + std::f32::consts::FRAC_PI_2,
-                    &mut meshes,
-                    &mut materials,
+                    &assets,
                 ),
                 StateScoped(AppState::Game),
             ));
@@ -182,7 +168,7 @@ fn despawn_enemies(
         if despawn {
             explosions.send(SpawnExplosion {
                 position: transform.translation,
-                color: space_ship.color(),
+                material: space_ship.material(),
             });
             commands.entity(entity).despawn();
         }

@@ -20,7 +20,7 @@ use self::{
     velocity::*,
     // enemy::*,
 };
-use crate::AppState;
+use crate::{assets::GameAssets, AppState};
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
@@ -64,8 +64,8 @@ pub struct Home;
 
 fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    assets: Res<GameAssets>,
 ) {
     commands.spawn((
         Camera2dBundle {
@@ -87,12 +87,7 @@ fn setup(
     ));
 
     commands.spawn((
-        PlayerBundle::new(
-            Vec3::new(10.0, 100.0, 0.0),
-            0.0,
-            &mut meshes,
-            &mut materials,
-        ),
+        PlayerBundle::new(Vec3::new(10.0, 100.0, 0.0), 0.0, &assets),
         StateScoped(AppState::Game),
     ));
 
@@ -101,7 +96,7 @@ fn setup(
         StarBundle::new(
             Mass(200_000.0),
             Color::srgb(4.0, 4.0, 0.8),
-            &mut meshes,
+            &assets,
             &mut materials,
         ),
         StateScoped(AppState::Game),
@@ -114,7 +109,7 @@ fn setup(
             0.5,
             Mass(100_000.0),
             Color::srgb(2.0, 1.5, 0.2),
-            &mut meshes,
+            &assets,
             &mut materials,
         ),
         StateScoped(AppState::Game),
@@ -127,7 +122,7 @@ fn setup(
             0.0,
             Mass(100_000.0),
             Color::srgb(0.2, 0.5, 2.0),
-            &mut meshes,
+            &assets,
             &mut materials,
         ),
         Home,
@@ -142,7 +137,7 @@ fn setup(
             0.8,
             Mass(100_000.0),
             Color::srgb(1.8, 0.4, 0.9),
-            &mut meshes,
+            &assets,
             &mut materials,
         ),
         StateScoped(AppState::Game),
