@@ -5,7 +5,11 @@ use crate::{
     assets::{AudioAssets, GameAssets},
     AppState,
 };
-use bevy::{audio::PlaybackMode, prelude::*, sprite::MaterialMesh2dBundle};
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 
 pub struct SpaceShipPlugin;
 
@@ -64,6 +68,7 @@ pub struct SpaceShipBundle {
     pub max_velocity: MaxVelocity,
     pub keep_in_map: KeepInMap,
     pub mesh: MaterialMesh2dBundle<ColorMaterial>,
+    pub audio: AudioBundle,
 }
 
 impl SpaceShipBundle {
@@ -75,6 +80,7 @@ impl SpaceShipBundle {
         material: Handle<ColorMaterial>,
         bullet_material: Handle<ColorMaterial>,
 
+        audio_assets: &AudioAssets,
         assets: &GameAssets,
     ) -> Self {
         let space_ship = SpaceShip {
@@ -103,6 +109,14 @@ impl SpaceShipBundle {
 
                 ..default()
             },
+            audio: AudioBundle {
+                source: audio_assets.thruster_fire_000.clone(),
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Loop,
+                    volume: Volume::new(0.0),
+                    ..default()
+                },
+            },
             space_ship,
         }
     }
@@ -111,12 +125,18 @@ impl SpaceShipBundle {
 fn update(
     mut commands: Commands,
     time: Res<Time>,
-    mut space_ships: Query<(&Collider, &mut SpaceShip, &mut Velocity, &mut Transform)>,
+    mut space_ships: Query<(
+        &Collider,
+        &mut SpaceShip,
+        &mut Velocity,
+        &mut Transform,
+        Option<&AudioSink>,
+    )>,
 
     audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
-    for (collider, mut space_ship, mut velocity, mut transform) in &mut space_ships {
+    for (collider, mut space_ship, mut velocity, mut transform, audio) in &mut space_ships {
         space_ship.rotation += match space_ship.steering {
             Steering::Left => 3.0 * time.delta_seconds(),
             Steering::Right => -3.0 * time.delta_seconds(),
@@ -166,5 +186,27 @@ fn update(
         }
 
         transform.rotation = space_ship.rot_quat();
+
+        if let Some(audio) = audio {
+            let volume = if collider.group & 0b1 != 0 {
+                // Player
+                if space_ship.throttle {
+                    0.4
+                } else {
+                    0.0
+                }
+            } else {
+                // Enemy
+                if space_ship.throttle {
+                    0.15
+                } else {
+                    0.0
+                }
+            };
+
+            if audio.volume() != volume {
+                audio.set_volume(volume);
+            }
+        }
     }
 }

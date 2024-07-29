@@ -2,7 +2,10 @@ use super::{
     ApplyVelocity, Collider, Health, Level, Planet, SpaceShip, SpaceShipBundle, SpawnExplosion,
     Star, Steering, UpdateSpaceShip, Velocity,
 };
-use crate::{assets::GameAssets, AppState};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -32,7 +35,13 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(position: Vec3, rotation: f32, level: &Level, assets: &GameAssets) -> Self {
+    pub fn new(
+        position: Vec3,
+        rotation: f32,
+        level: &Level,
+        audio_assets: &AudioAssets,
+        assets: &GameAssets,
+    ) -> Self {
         Self {
             player: Player,
             health: level.player_health,
@@ -43,6 +52,7 @@ impl PlayerBundle {
                 rotation,
                 assets.player_space_ship_material.clone(),
                 assets.player_bullet_material.clone(),
+                audio_assets,
                 assets,
             ),
         }

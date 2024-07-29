@@ -24,7 +24,10 @@ use self::{
     star::*,
     velocity::*,
 };
-use crate::{assets::GameAssets, AppState};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
 use bevy::{
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
@@ -82,6 +85,7 @@ fn setup(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
     level: Res<Level>,
+    audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
     commands.spawn((
@@ -104,7 +108,13 @@ fn setup(
     ));
 
     commands.spawn((
-        PlayerBundle::new(Vec3::new(-300.0, 200.0, 0.0), 0.0, &level, &assets),
+        PlayerBundle::new(
+            Vec3::new(-300.0, 200.0, 0.0),
+            0.0,
+            &level,
+            &audio_assets,
+            &assets,
+        ),
         StateScoped(AppState::Game),
     ));
 

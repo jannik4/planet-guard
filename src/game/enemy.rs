@@ -2,7 +2,10 @@ use super::{
     ApplyVelocity, Collider, GameState, Health, Home, Level, Planet, Player, SpaceShip,
     SpaceShipBundle, SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
-use crate::{assets::GameAssets, AppState};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
 use bevy::prelude::*;
 use rand::Rng;
 
@@ -65,7 +68,13 @@ pub struct EnemyBundle {
 }
 
 impl EnemyBundle {
-    pub fn new(position: Vec3, rotation: f32, level: &Level, assets: &GameAssets) -> Self {
+    pub fn new(
+        position: Vec3,
+        rotation: f32,
+        level: &Level,
+        audio_assets: &AudioAssets,
+        assets: &GameAssets,
+    ) -> Self {
         Self {
             enemy: Enemy::new(),
             health: level.enemy_health,
@@ -76,6 +85,7 @@ impl EnemyBundle {
                 rotation,
                 assets.enemy_space_ship_material.clone(),
                 assets.enemy_bullet_material.clone(),
+                audio_assets,
                 assets,
             ),
         }
@@ -87,6 +97,7 @@ fn spawn_enemies(
     mut enemy_spawner: ResMut<EnemySpawner>,
     time: Res<Time>,
     level: Res<Level>,
+    audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
     if enemy_spawner.timer.tick(time.delta()).just_finished() {
@@ -96,6 +107,7 @@ fn spawn_enemies(
                 Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
                 alpha + std::f32::consts::FRAC_PI_2,
                 &level,
+                &audio_assets,
                 &assets,
             ),
             StateScoped(AppState::Game),
