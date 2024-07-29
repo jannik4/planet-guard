@@ -25,6 +25,7 @@ pub struct GameAssets {
     pub bullet_mesh: Mesh2dHandle,
     pub explosion_mesh: Mesh2dHandle,
     pub background_mesh: Mesh2dHandle,
+    pub health_bar_mesh: Mesh2dHandle,
 
     pub enemy_space_ship_material: Handle<ColorMaterial>,
     pub enemy_bullet_material: Handle<ColorMaterial>,
@@ -32,7 +33,10 @@ pub struct GameAssets {
     pub player_space_ship_material: Handle<ColorMaterial>,
     pub player_bullet_material: Handle<ColorMaterial>,
 
+    pub home_planet_material: Handle<ColorMaterial>,
     pub background_material: Handle<ColorMaterial>,
+    pub health_bar_material_gray: Handle<ColorMaterial>,
+    pub health_bar_material_green: Handle<ColorMaterial>,
 }
 
 impl FromWorld for GameAssets {
@@ -52,6 +56,7 @@ fn load_assets(
         bullet_mesh: meshes.add(Rectangle::new(6.0, 2.0)).into(),
         explosion_mesh: meshes.add(Rectangle::new(3.0, 1.5)).into(),
         background_mesh: meshes.add(background_mesh()).into(),
+        health_bar_mesh: meshes.add(Capsule2d::new(4.0, 200.0)).into(),
 
         enemy_space_ship_material: materials.add(Color::srgb(1.4, 0.6, 0.6)),
         enemy_bullet_material: materials.add(Color::srgb(2.0, 0.0, 0.0)),
@@ -59,7 +64,10 @@ fn load_assets(
         player_space_ship_material: materials.add(Color::srgb(0.6, 0.6, 1.4)),
         player_bullet_material: materials.add(Color::srgb(0.0, 0.0, 2.0)),
 
+        home_planet_material: materials.add(Color::srgb(0.2, 0.5, 2.0)),
         background_material: materials.add(Color::srgb(6.0, 6.0, 6.0)),
+        health_bar_material_gray: materials.add(Color::srgb(0.5, 0.5, 0.5)),
+        health_bar_material_green: materials.add(Color::srgb(0.0, 1.5, 0.0)),
     }
 }
 

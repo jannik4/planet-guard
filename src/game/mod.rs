@@ -2,7 +2,9 @@ mod background;
 mod bullet;
 mod enemy;
 mod explosion;
+mod game_ui;
 mod gravity;
+mod health;
 mod planet;
 mod player;
 mod space_ship;
@@ -13,12 +15,12 @@ use self::{
     bullet::*,
     explosion::*,
     gravity::*,
+    health::*, // enemy::*,
     planet::*,
     player::*,
     space_ship::*,
     star::*,
     velocity::*,
-    // enemy::*,
 };
 use crate::{assets::GameAssets, AppState};
 use bevy::{
@@ -45,6 +47,7 @@ impl Plugin for GamePlugin {
             player::PlayerPlugin,
             enemy::EnemyPlugin,
             explosion::ExplosionPlugin,
+            game_ui::GameUiPlugin,
             background::BackgroundPlugin,
         ));
     }
@@ -55,9 +58,6 @@ pub struct Collider {
     pub radius: f32,
     pub group: u32,
 }
-
-#[derive(Debug, Component)]
-pub struct Health(pub f32);
 
 #[derive(Debug, Component)]
 pub struct Home;
@@ -108,9 +108,8 @@ fn setup(
             10.0,
             0.5,
             Mass(100_000.0),
-            Color::srgb(2.0, 1.5, 0.2),
+            materials.add(Color::srgb(2.0, 1.5, 0.2)),
             &assets,
-            &mut materials,
         ),
         StateScoped(AppState::Game),
     ));
@@ -121,12 +120,11 @@ fn setup(
             20.0,
             0.0,
             Mass(100_000.0),
-            Color::srgb(0.2, 0.5, 2.0),
+            assets.home_planet_material.clone(),
             &assets,
-            &mut materials,
         ),
         Home,
-        Health(1000.0),
+        Health::new(1000.0),
         StateScoped(AppState::Game),
     ));
 
@@ -136,9 +134,8 @@ fn setup(
             40.0,
             0.8,
             Mass(100_000.0),
-            Color::srgb(1.8, 0.4, 0.9),
+            materials.add(Color::srgb(1.8, 0.4, 0.9)),
             &assets,
-            &mut materials,
         ),
         StateScoped(AppState::Game),
     ));

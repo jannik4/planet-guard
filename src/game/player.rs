@@ -33,7 +33,7 @@ impl PlayerBundle {
     pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
         Self {
             player: Player,
-            health: Health(10.0),
+            health: Health::new(10.0),
             space_ship: SpaceShipBundle::new(
                 0b1,
                 Velocity(Vec3::ZERO),

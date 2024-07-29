@@ -40,10 +40,9 @@ impl PlanetBundle {
         orbit_time: f32,
         orbit_progress: f32,
         mass: Mass,
-        color: Color,
+        material: Handle<ColorMaterial>,
 
         assets: &GameAssets,
-        materials: &mut Assets<ColorMaterial>,
     ) -> Self {
         let planet = Planet {
             orbit_radius,
@@ -59,7 +58,7 @@ impl PlanetBundle {
             mass,
             mesh: MaterialMesh2dBundle {
                 mesh: assets.planet_mesh.clone(),
-                material: materials.add(color),
+                material,
                 transform: Transform::from_translation(planet.position()),
                 ..default()
             },

@@ -105,7 +105,7 @@ fn update(
                 <= obj_collider.radius * obj_collider.radius
             {
                 if let Some(mut health) = obj_health {
-                    health.0 -= bullet.damage;
+                    health.damage(bullet.damage);
                 }
                 despawn = true;
                 break;

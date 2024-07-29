@@ -54,7 +54,7 @@ impl EnemyBundle {
     pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
         Self {
             enemy: Enemy::new(),
-            health: Health(10.0),
+            health: Health::new(10.0),
             space_ship: SpaceShipBundle::new(
                 0b10,
                 Velocity(Vec3::ZERO),
@@ -152,7 +152,7 @@ fn despawn_enemies(
     >,
 ) {
     for (entity, transform, collider, health, space_ship) in &mut enemies {
-        let mut despawn = health.0 <= 0.0;
+        let mut despawn = health.current() <= 0.0;
 
         if !despawn {
             for (obj_transform, obj_collider) in &planets_and_stars {
