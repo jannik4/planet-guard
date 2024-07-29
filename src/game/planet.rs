@@ -20,8 +20,8 @@ pub struct Planet {
 
 impl Planet {
     fn position(&self) -> Vec3 {
-        let x = self.orbit_radius * self.orbit_progress.cos();
-        let y = self.orbit_radius * self.orbit_progress.sin();
+        let x = self.orbit_radius * (self.orbit_progress * std::f32::consts::TAU).cos();
+        let y = self.orbit_radius * (self.orbit_progress * std::f32::consts::TAU).sin();
         Vec3::new(x, y, 0.0)
     }
 }

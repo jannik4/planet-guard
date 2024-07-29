@@ -10,6 +10,10 @@ pub struct EnemyPlugin;
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
+        // Setup and cleanup
+        app.add_systems(OnEnter(AppState::Game), setup);
+        app.add_systems(OnExit(AppState::Game), cleanup);
+
         // Update
         app.add_systems(Update, spawn_enemies.run_if(in_state(AppState::Game)));
         app.add_systems(
@@ -20,6 +24,11 @@ impl Plugin for EnemyPlugin {
                 .run_if(in_state(AppState::Game)),
         );
     }
+}
+
+#[derive(Debug, Resource)]
+struct EnemySpawner {
+    timer: Timer,
 }
 
 #[derive(Debug, Component)]
@@ -70,24 +79,22 @@ impl EnemyBundle {
 
 fn spawn_enemies(
     mut commands: Commands,
+    mut enemy_spawner: ResMut<EnemySpawner>,
+    time: Res<Time>,
     level: Res<Level>,
     assets: Res<GameAssets>,
-    enemies: Query<(), With<Enemy>>,
 ) {
-    let enemies_alive = enemies.iter().count();
-    if let Some(n) = 5usize.checked_sub(enemies_alive) {
-        for _ in 0..n {
-            let alpha = rand::thread_rng().gen_range(0.0..std::f32::consts::TAU);
-            commands.spawn((
-                EnemyBundle::new(
-                    Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
-                    alpha + std::f32::consts::FRAC_PI_2,
-                    &level,
-                    &assets,
-                ),
-                StateScoped(AppState::Game),
-            ));
-        }
+    if enemy_spawner.timer.tick(time.delta()).just_finished() {
+        let alpha = rand::thread_rng().gen_range(0.0..std::f32::consts::TAU);
+        commands.spawn((
+            EnemyBundle::new(
+                Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
+                alpha + std::f32::consts::FRAC_PI_2,
+                &level,
+                &assets,
+            ),
+            StateScoped(AppState::Game),
+        ));
     }
 }
 
@@ -153,13 +160,13 @@ fn update(
 fn despawn_enemies(
     mut commands: Commands,
     mut explosions: EventWriter<SpawnExplosion>,
-    mut enemies: Query<(Entity, &Transform, &Collider, &Health, &SpaceShip), With<Enemy>>,
+    enemies: Query<(Entity, &Transform, &Collider, &Health, &SpaceShip), With<Enemy>>,
     planets_and_stars: Query<
         (&Transform, &Collider),
         (Without<Enemy>, Or<(With<Planet>, With<Star>)>),
     >,
 ) {
-    for (entity, transform, collider, health, space_ship) in &mut enemies {
+    for (entity, transform, collider, health, space_ship) in &enemies {
         let mut despawn = health.current() <= 0.0;
 
         if !despawn {
@@ -181,4 +188,14 @@ fn despawn_enemies(
             commands.entity(entity).despawn();
         }
     }
+}
+
+fn setup(mut commands: Commands, level: Res<Level>) {
+    commands.insert_resource(EnemySpawner {
+        timer: Timer::from_seconds(level.enemy_spawn_interval, TimerMode::Repeating),
+    });
+}
+
+fn cleanup(mut commands: Commands) {
+    commands.remove_resource::<EnemySpawner>();
 }

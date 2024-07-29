@@ -24,6 +24,8 @@ pub struct Level {
 
     pub player_damage: f32,
     pub enemy_damage: f32,
+
+    pub enemy_spawn_interval: f32,
 }
 
 impl Level {
@@ -31,14 +33,16 @@ impl Level {
         Self {
             name: "Easy".to_string(),
 
-            home_orbit_time: 15.0,
+            home_orbit_time: 30.0,
 
-            home_health: Health::new(1000.0),
+            home_health: Health::new(160.0),
             player_health: Health::new(50.0),
             enemy_health: Health::new(10.0),
 
             player_damage: 10.0,
             enemy_damage: 10.0,
+
+            enemy_spawn_interval: 5.0,
         }
     }
 
@@ -46,7 +50,7 @@ impl Level {
         Self {
             name: "Medium".to_string(),
 
-            home_orbit_time: 30.0,
+            home_orbit_time: 60.0,
 
             home_health: Health::new(500.0),
             player_health: Health::new(50.0),
@@ -54,6 +58,8 @@ impl Level {
 
             player_damage: 10.0,
             enemy_damage: 10.0,
+
+            enemy_spawn_interval: 5.0,
         }
     }
 
@@ -61,7 +67,7 @@ impl Level {
         Self {
             name: "Hard".to_string(),
 
-            home_orbit_time: 60.0,
+            home_orbit_time: 90.0,
 
             home_health: Health::new(250.0),
             player_health: Health::new(50.0),
@@ -69,6 +75,8 @@ impl Level {
 
             player_damage: 10.0,
             enemy_damage: 10.0,
+
+            enemy_spawn_interval: 5.0,
         }
     }
 }
