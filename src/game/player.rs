@@ -1,6 +1,6 @@
 use super::{
-    ApplyVelocity, Collider, Health, Level, Planet, SpaceShip, SpaceShipBundle, SpawnExplosion,
-    Star, Steering, UpdateSpaceShip, Velocity,
+    ApplyVelocity, Collider, GameState, Health, Level, Planet, SpaceShip, SpaceShipBundle,
+    SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{
     assets::{AudioAssets, GameAssets},
@@ -63,6 +63,7 @@ fn update(
     mut players: Query<(&mut SpaceShip, &mut Transform), With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
+    game_state: Res<State<GameState>>,
     level: Res<Level>,
 ) {
     let Ok((mut space_ship, mut transform)) = players.get_single_mut() else {
@@ -75,19 +76,29 @@ fn update(
         1.0 - f32::exp(f32::ln(0.95) * 60.0 * time.delta_seconds()),
     );
 
-    space_ship.steering = match (
-        keyboard_input.pressed(KeyCode::KeyA),
-        keyboard_input.pressed(KeyCode::KeyD),
-    ) {
-        (true, false) => Steering::Left,
-        (false, true) => Steering::Right,
-        _ => Steering::None,
-    };
-    space_ship.throttle = keyboard_input.pressed(KeyCode::KeyW);
-    space_ship.brake = keyboard_input.pressed(KeyCode::KeyS);
-    space_ship.shoot = keyboard_input
-        .just_pressed(KeyCode::Space)
-        .then_some(level.player_damage);
+    match **game_state {
+        GameState::Running | GameState::GameWon => {
+            space_ship.steering = match (
+                keyboard_input.pressed(KeyCode::KeyA),
+                keyboard_input.pressed(KeyCode::KeyD),
+            ) {
+                (true, false) => Steering::Left,
+                (false, true) => Steering::Right,
+                _ => Steering::None,
+            };
+            space_ship.throttle = keyboard_input.pressed(KeyCode::KeyW);
+            space_ship.brake = keyboard_input.pressed(KeyCode::KeyS);
+            space_ship.shoot = keyboard_input
+                .just_pressed(KeyCode::Space)
+                .then_some(level.player_damage);
+        }
+        GameState::GameOver => {
+            space_ship.steering = Steering::None;
+            space_ship.throttle = false;
+            space_ship.brake = true;
+            space_ship.shoot = None;
+        }
+    }
 }
 
 fn dead(
