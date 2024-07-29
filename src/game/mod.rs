@@ -29,6 +29,7 @@ use crate::{
     AppState,
 };
 use bevy::{
+    audio::PlaybackMode,
     core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
     prelude::*,
     render::camera::ScalingMode,
@@ -166,6 +167,14 @@ fn setup(
         ),
         StateScoped(AppState::Game),
     ));
+
+    commands.spawn(AudioBundle {
+        source: audio_assets.force_field_000.clone(),
+        settings: PlaybackSettings {
+            mode: PlaybackMode::Despawn,
+            ..default()
+        },
+    });
 }
 
 fn cleanup(mut _commands: Commands) {}

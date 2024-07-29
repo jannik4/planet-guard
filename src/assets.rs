@@ -38,6 +38,9 @@ pub struct AudioAssets {
 
     #[asset(path = "thrusterFire_000.ogg")]
     pub thruster_fire_000: Handle<AudioSource>,
+
+    #[asset(path = "forceField_000.ogg")]
+    pub force_field_000: Handle<AudioSource>,
 }
 
 impl AudioAssets {}
