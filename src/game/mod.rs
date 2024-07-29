@@ -9,6 +9,7 @@ mod level;
 mod planet;
 mod player;
 mod quit;
+mod show_home_progress;
 mod space_ship;
 mod star;
 mod velocity;
@@ -61,6 +62,7 @@ impl Plugin for GamePlugin {
             game_ui::GameUiPlugin,
             background::BackgroundPlugin,
             quit::QuitPlugin,
+            show_home_progress::ShowHomeProgressPlugin,
         ));
     }
 }
