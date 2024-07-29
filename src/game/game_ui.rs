@@ -72,7 +72,7 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
     commands
         .spawn((
             SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(512.0, 0.0, 0.0)),
+                transform: Transform::from_translation(Vec3::new(612.0, 0.0, 0.0)),
                 ..default()
             },
             StateScoped(AppState::Game),

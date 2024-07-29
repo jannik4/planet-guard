@@ -91,7 +91,7 @@ fn setup(
     ));
 
     commands.spawn((
-        PlayerBundle::new(Vec3::new(10.0, 100.0, 0.0), 0.0, &level, &assets),
+        PlayerBundle::new(Vec3::new(-300.0, 200.0, 0.0), 0.0, &level, &assets),
         StateScoped(AppState::Game),
     ));
 
