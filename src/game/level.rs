@@ -87,6 +87,7 @@ fn cleanup(mut commands: Commands) {
 
 #[derive(Debug, Resource)]
 pub struct Level {
+    #[allow(dead_code)]
     pub name: String,
 
     pub home_orbit_time: f32,

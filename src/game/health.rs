@@ -11,9 +11,9 @@ impl Health {
         Self { max, current: max }
     }
 
-    pub fn max(&self) -> f32 {
-        self.max
-    }
+    // pub fn max(&self) -> f32 {
+    //     self.max
+    // }
 
     pub fn current(&self) -> f32 {
         self.current
