@@ -149,12 +149,13 @@ fn update(
         let distance = direction.length();
         let direction = direction.normalize();
         let angle_between = direction
-            .angle_between(space_ship.rot_quat() * Vec3::Y)
-            .to_degrees();
+            .angle_between(space_ship.rot_quat() * -Vec3::X)
+            .to_degrees()
+            - 90.0;
 
         space_ship.steering = match angle_between {
-            angle if angle > 5.0 => Steering::Right,
-            angle if angle < -5.0 => Steering::Left,
+            angle if angle > 2.5 => Steering::Right,
+            angle if angle < -2.5 => Steering::Left,
             _ => Steering::None,
         };
         space_ship.throttle = distance > throttle_threshold;
