@@ -12,10 +12,35 @@ pub struct GameAssetsPlugin;
 impl Plugin for GameAssetsPlugin {
     fn build(&self, app: &mut App) {
         app.configure_loading_state(
-            LoadingStateConfig::new(AssetsState::Loading).init_resource::<GameAssets>(),
+            LoadingStateConfig::new(AssetsState::Loading)
+                .load_collection::<AudioAssets>()
+                .init_resource::<GameAssets>(),
         );
     }
 }
+
+#[derive(AssetCollection, Resource)]
+#[allow(dead_code)]
+pub struct AudioAssets {
+    #[asset(path = "laserSmall_000.ogg")]
+    pub laser_small_000: Handle<AudioSource>,
+    #[asset(path = "laserSmall_001.ogg")]
+    pub laser_small_001: Handle<AudioSource>,
+    #[asset(path = "laserSmall_002.ogg")]
+    pub laser_small_002: Handle<AudioSource>,
+    #[asset(path = "laserSmall_003.ogg")]
+    pub laser_small_003: Handle<AudioSource>,
+    #[asset(path = "laserSmall_004.ogg")]
+    pub laser_small_004: Handle<AudioSource>,
+
+    #[asset(path = "explosionCrunch_000.ogg")]
+    pub explosion_crunch_000: Handle<AudioSource>,
+
+    #[asset(path = "thrusterFire_000.ogg")]
+    pub thruster_fire_000: Handle<AudioSource>,
+}
+
+impl AudioAssets {}
 
 #[derive(Debug, Resource)]
 pub struct GameAssets {

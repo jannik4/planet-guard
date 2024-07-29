@@ -1,8 +1,11 @@
 use super::{
     ApplyVelocity, BulletBundle, BulletMissileLock, Collider, KeepInMap, MaxVelocity, Velocity,
 };
-use crate::{assets::GameAssets, AppState};
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
+use bevy::{audio::PlaybackMode, prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct SpaceShipPlugin;
 
@@ -110,6 +113,7 @@ fn update(
     time: Res<Time>,
     mut space_ships: Query<(&Collider, &mut SpaceShip, &mut Velocity, &mut Transform)>,
 
+    audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
     for (collider, mut space_ship, mut velocity, mut transform) in &mut space_ships {
@@ -148,6 +152,17 @@ fn update(
             if let Some(target) = space_ship.shoot_missile_lock {
                 cmds.insert(BulletMissileLock { target });
             }
+            commands.spawn(AudioBundle {
+                source: if collider.group & 0b1 != 0 {
+                    audio_assets.laser_small_001.clone()
+                } else {
+                    audio_assets.laser_small_002.clone()
+                },
+                settings: PlaybackSettings {
+                    mode: PlaybackMode::Despawn,
+                    ..default()
+                },
+            });
         }
 
         transform.rotation = space_ship.rot_quat();

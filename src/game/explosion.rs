@@ -1,6 +1,13 @@
 use super::{GravityMultiplier, Velocity};
-use crate::{assets::GameAssets, AppState};
-use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
+use crate::{
+    assets::{AudioAssets, GameAssets},
+    AppState,
+};
+use bevy::{
+    audio::{PlaybackMode, Volume},
+    prelude::*,
+    sprite::MaterialMesh2dBundle,
+};
 
 pub struct ExplosionPlugin;
 
@@ -38,6 +45,7 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 fn spawn_explosions(
     mut events: EventReader<SpawnExplosion>,
     mut commands: Commands,
+    audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
     for spawn in events.read() {
@@ -68,6 +76,15 @@ fn spawn_explosions(
                     ));
                 }
             });
+        commands.spawn(AudioBundle {
+            source: audio_assets.explosion_crunch_000.clone(),
+            settings: PlaybackSettings {
+                mode: PlaybackMode::Despawn,
+                volume: Volume::new(0.5),
+                speed: 2.0,
+                ..default()
+            },
+        });
     }
 }
 
