@@ -175,7 +175,7 @@ impl Level {
 
             home_orbit_time: 60.0,
 
-            home_health: Health::new(350.0),
+            home_health: Health::new(400.0),
             player_health: Health::new(30.0),
             enemy_health: Health::new(20.0),
 
@@ -183,7 +183,7 @@ impl Level {
             enemy_damage: 10.0,
 
             enemy_spawn_interval: 5.0,
-            enemy_force_to_home_probability: 0.25,
+            enemy_force_to_home_probability: 0.15,
         }
     }
 
@@ -193,7 +193,7 @@ impl Level {
 
             home_orbit_time: 90.0,
 
-            home_health: Health::new(350.0),
+            home_health: Health::new(500.0),
             player_health: Health::new(20.0),
             enemy_health: Health::new(20.0),
 
@@ -201,7 +201,7 @@ impl Level {
             enemy_damage: 10.0,
 
             enemy_spawn_interval: 4.0,
-            enemy_force_to_home_probability: 0.3,
+            enemy_force_to_home_probability: 0.2,
         }
     }
 }

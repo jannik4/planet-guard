@@ -95,7 +95,7 @@ impl SpaceShipBundle {
         };
         Self {
             collider: Collider {
-                radius: 10.0,
+                radius: 12.0,
                 group: collider_group,
             },
             velocity,
