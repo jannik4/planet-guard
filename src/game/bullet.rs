@@ -1,4 +1,4 @@
-use super::{ApplyVelocity, Collider, GravityMultiplier, Health, Velocity};
+use super::{ApplyVelocity, Collider, GameState, GravityMultiplier, Health, Velocity};
 use crate::{assets::GameAssets, AppState};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
@@ -25,6 +25,7 @@ pub struct BulletMissileLock {
 pub struct Bullet {
     pub collider_filter: u32,
     pub damage: f32,
+    pub time_to_live: f32,
 }
 
 #[derive(Bundle)]
@@ -39,6 +40,7 @@ impl BulletBundle {
     pub fn new(
         collider_filter: u32,
         damage: f32,
+        time_to_live: f32,
         velocity: Velocity,
         position: Vec3,
         material: Handle<ColorMaterial>,
@@ -48,6 +50,7 @@ impl BulletBundle {
             bullet: Bullet {
                 collider_filter,
                 damage,
+                time_to_live,
             },
             velocity,
             gravity_multiplier: GravityMultiplier(10.0),
@@ -69,9 +72,10 @@ fn rot_from_velocity(velocity: Vec3) -> Quat {
 
 fn update(
     time: Res<Time>,
+    game_state: Res<State<GameState>>,
     mut bullets: Query<(
         Entity,
-        &Bullet,
+        &mut Bullet,
         Option<&BulletMissileLock>,
         &mut Velocity,
         &mut Transform,
@@ -80,7 +84,8 @@ fn update(
     targets: Query<&Transform, Without<Bullet>>,
     mut commands: Commands,
 ) {
-    for (entity, bullet, lock, mut velocity, mut transform) in &mut bullets {
+    for (entity, mut bullet, lock, mut velocity, mut transform) in &mut bullets {
+        bullet.time_to_live -= time.delta_seconds();
         if let Some(lock) = lock {
             if let Ok(target) = targets.get(lock.target) {
                 let target_velocity =
@@ -92,10 +97,9 @@ fn update(
                 );
             }
         }
-
         transform.rotation = rot_from_velocity(**velocity);
 
-        let mut despawn = transform.translation.length() > 1024.0;
+        let mut despawn = transform.translation.length() > 1024.0 || bullet.time_to_live <= 0.0;
 
         for (obj_transform, obj_collider, obj_health) in &mut objects {
             if obj_collider.group & bullet.collider_filter == 0 {
@@ -104,8 +108,10 @@ fn update(
             if Vec3::distance_squared(transform.translation, obj_transform.translation)
                 <= obj_collider.radius * obj_collider.radius
             {
-                if let Some(mut health) = obj_health {
-                    health.damage(bullet.damage);
+                if **game_state == GameState::Running {
+                    if let Some(mut health) = obj_health {
+                        health.damage(bullet.damage);
+                    }
                 }
                 despawn = true;
                 break;

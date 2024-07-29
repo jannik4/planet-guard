@@ -1,4 +1,7 @@
-use crate::{game::Level, ui, AppState};
+use crate::{
+    game::{GameState, Level},
+    ui, AppState,
+};
 use bevy::prelude::*;
 
 pub struct MainMenuPlugin;
@@ -28,6 +31,7 @@ fn update(
         (Changed<Interaction>, With<Button>),
     >,
     mut next_state: ResMut<NextState<AppState>>,
+    mut next_state_game: ResMut<NextState<GameState>>,
 ) {
     for (interaction, action) in &mut interaction_query {
         if *interaction == Interaction::Pressed {
@@ -35,14 +39,17 @@ fn update(
                 ButtonAction::Easy => {
                     commands.insert_resource(Level::easy());
                     next_state.set(AppState::Game);
+                    next_state_game.set(GameState::Running);
                 }
                 ButtonAction::Medium => {
                     commands.insert_resource(Level::medium());
                     next_state.set(AppState::Game);
+                    next_state_game.set(GameState::Running);
                 }
                 ButtonAction::Hard => {
                     commands.insert_resource(Level::hard());
                     next_state.set(AppState::Game);
+                    next_state_game.set(GameState::Running);
                 }
             }
         }

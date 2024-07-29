@@ -1,6 +1,6 @@
 use super::{
-    ApplyVelocity, Collider, Health, Home, Level, Planet, Player, SpaceShip, SpaceShipBundle,
-    SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
+    ApplyVelocity, Collider, GameState, Health, Home, Level, Planet, Player, SpaceShip,
+    SpaceShipBundle, SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{assets::GameAssets, AppState};
 use bevy::prelude::*;
@@ -15,7 +15,12 @@ impl Plugin for EnemyPlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         // Update
-        app.add_systems(Update, spawn_enemies.run_if(in_state(AppState::Game)));
+        app.add_systems(
+            Update,
+            spawn_enemies
+                .run_if(in_state(AppState::Game))
+                .run_if(in_state(GameState::Running)),
+        );
         app.add_systems(
             Update,
             (update, despawn_enemies)

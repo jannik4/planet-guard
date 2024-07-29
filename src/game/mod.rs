@@ -40,7 +40,10 @@ impl Plugin for GamePlugin {
         app.add_systems(OnEnter(AppState::Game), setup);
         app.add_systems(OnExit(AppState::Game), cleanup);
 
+        app.init_state::<GameState>();
+
         app.add_plugins((
+            level::LevelPlugin,
             velocity::VelocityPlugin,
             gravity::GravityPlugin,
             star::StarPlugin,
@@ -54,6 +57,14 @@ impl Plugin for GamePlugin {
             background::BackgroundPlugin,
         ));
     }
+}
+
+#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
+pub enum GameState {
+    #[default]
+    Running,
+    GameWon,
+    GameOver,
 }
 
 #[derive(Debug, Component)]

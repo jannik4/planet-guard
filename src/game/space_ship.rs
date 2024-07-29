@@ -139,6 +139,7 @@ fn update(
             let mut cmds = commands.spawn(BulletBundle::new(
                 collider.group ^ 0b11,
                 damage,
+                20.0,
                 Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
                 transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),
                 space_ship.bullet_material.clone(),

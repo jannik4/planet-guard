@@ -19,11 +19,15 @@ impl Health {
         self.current
     }
 
+    pub fn fraction(&self) -> f32 {
+        self.current / self.max
+    }
+
     pub fn damage(&mut self, damage: f32) {
         self.current = f32::max(0.0, self.current - damage);
     }
 
-    pub fn fraction(&self) -> f32 {
-        self.current / self.max
+    pub fn set_dead(&mut self) {
+        self.current = 0.0;
     }
 }
