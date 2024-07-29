@@ -8,6 +8,7 @@ mod health;
 mod level;
 mod planet;
 mod player;
+mod quit;
 mod space_ship;
 mod star;
 mod velocity;
@@ -55,6 +56,7 @@ impl Plugin for GamePlugin {
             explosion::ExplosionPlugin,
             game_ui::GameUiPlugin,
             background::BackgroundPlugin,
+            quit::QuitPlugin,
         ));
     }
 }

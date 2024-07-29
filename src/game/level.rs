@@ -65,7 +65,7 @@ fn spawn_text(commands: &mut Commands, text: String, color: Color) {
                 },
                 ..default()
             },
-            StateScoped(AppState::MainMenu),
+            StateScoped(AppState::Game),
         ))
         .with_children(|parent| {
             parent.spawn(TextBundle::from_section(
