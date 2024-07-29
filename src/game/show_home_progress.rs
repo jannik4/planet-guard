@@ -1,4 +1,4 @@
-use super::{Home, Planet};
+use super::{GameState, Home, Planet};
 use crate::AppState;
 use bevy::prelude::*;
 
@@ -11,7 +11,13 @@ impl Plugin for ShowHomeProgressPlugin {
         app.add_systems(OnExit(AppState::Game), cleanup);
 
         // Update
-        app.add_systems(Update, (update, despawn).run_if(in_state(AppState::Game)));
+        app.add_systems(
+            Update,
+            spawn
+                .run_if(in_state(AppState::Game))
+                .run_if(not(in_state(GameState::GameOver))),
+        );
+        app.add_systems(Update, despawn.run_if(in_state(AppState::Game)));
     }
 }
 
@@ -21,7 +27,7 @@ struct NextProgress(u32);
 #[derive(Debug, Component)]
 struct DespawnAfterTimer(Timer);
 
-fn update(
+fn spawn(
     mut commands: Commands,
     mut next_progress: ResMut<NextProgress>,
     homes: Query<(&Planet, &Transform), With<Home>>,
