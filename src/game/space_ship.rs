@@ -30,7 +30,7 @@ pub struct SpaceShip {
     pub throttle: bool,
     pub brake: bool,
     pub steering: Steering,
-    pub shoot: bool,
+    pub shoot: Option<f32>,
     pub shoot_missile_lock: Option<Entity>,
 }
 
@@ -81,7 +81,7 @@ impl SpaceShipBundle {
             throttle: false,
             brake: false,
             steering: Steering::None,
-            shoot: false,
+            shoot: None,
             shoot_missile_lock: None,
         };
         Self {
@@ -135,10 +135,10 @@ fn update(
             **velocity -= brake;
         }
 
-        if space_ship.shoot {
+        if let Some(damage) = space_ship.shoot.take() {
             let mut cmds = commands.spawn(BulletBundle::new(
                 collider.group ^ 0b11,
-                10.0,
+                damage,
                 Velocity(space_ship.rot_quat() * Vec3::new(0.0, 256.0, 0.0)),
                 transform.translation + space_ship.rot_quat() * Vec3::new(0.0, 10.0, 0.0),
                 space_ship.bullet_material.clone(),
@@ -147,7 +147,6 @@ fn update(
             if let Some(target) = space_ship.shoot_missile_lock {
                 cmds.insert(BulletMissileLock { target });
             }
-            space_ship.shoot = false;
         }
 
         transform.rotation = space_ship.rot_quat();

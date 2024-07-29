@@ -5,6 +5,7 @@ mod explosion;
 mod game_ui;
 mod gravity;
 mod health;
+mod level;
 mod planet;
 mod player;
 mod space_ship;
@@ -28,6 +29,8 @@ use bevy::{
     prelude::*,
     render::camera::ScalingMode,
 };
+
+pub use self::level::Level;
 
 pub struct GamePlugin;
 
@@ -65,6 +68,7 @@ pub struct Home;
 fn setup(
     mut commands: Commands,
     mut materials: ResMut<Assets<ColorMaterial>>,
+    level: Res<Level>,
     assets: Res<GameAssets>,
 ) {
     commands.spawn((
@@ -87,7 +91,7 @@ fn setup(
     ));
 
     commands.spawn((
-        PlayerBundle::new(Vec3::new(10.0, 100.0, 0.0), 0.0, &assets),
+        PlayerBundle::new(Vec3::new(10.0, 100.0, 0.0), 0.0, &level, &assets),
         StateScoped(AppState::Game),
     ));
 
@@ -105,7 +109,7 @@ fn setup(
     commands.spawn((
         PlanetBundle::new(
             150.0,
-            10.0,
+            level.home_orbit_time / 2.0,
             0.5,
             Mass(100_000.0),
             materials.add(Color::srgb(2.0, 1.5, 0.2)),
@@ -117,21 +121,21 @@ fn setup(
     commands.spawn((
         PlanetBundle::new(
             300.0,
-            20.0,
+            level.home_orbit_time,
             0.0,
             Mass(100_000.0),
             assets.home_planet_material.clone(),
             &assets,
         ),
         Home,
-        Health::new(1000.0),
+        level.home_health,
         StateScoped(AppState::Game),
     ));
 
     commands.spawn((
         PlanetBundle::new(
             450.0,
-            40.0,
+            level.home_orbit_time * 2.0,
             0.8,
             Mass(100_000.0),
             materials.add(Color::srgb(1.8, 0.4, 0.9)),

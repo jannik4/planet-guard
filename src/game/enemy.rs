@@ -1,5 +1,5 @@
 use super::{
-    ApplyVelocity, Collider, Health, Home, Planet, Player, SpaceShip, SpaceShipBundle,
+    ApplyVelocity, Collider, Health, Home, Level, Planet, Player, SpaceShip, SpaceShipBundle,
     SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{assets::GameAssets, AppState};
@@ -51,10 +51,10 @@ pub struct EnemyBundle {
 }
 
 impl EnemyBundle {
-    pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
+    pub fn new(position: Vec3, rotation: f32, level: &Level, assets: &GameAssets) -> Self {
         Self {
             enemy: Enemy::new(),
-            health: Health::new(10.0),
+            health: level.enemy_health,
             space_ship: SpaceShipBundle::new(
                 0b10,
                 Velocity(Vec3::ZERO),
@@ -68,7 +68,12 @@ impl EnemyBundle {
     }
 }
 
-fn spawn_enemies(mut commands: Commands, assets: Res<GameAssets>, enemies: Query<(), With<Enemy>>) {
+fn spawn_enemies(
+    mut commands: Commands,
+    level: Res<Level>,
+    assets: Res<GameAssets>,
+    enemies: Query<(), With<Enemy>>,
+) {
     let enemies_alive = enemies.iter().count();
     if let Some(n) = 5usize.checked_sub(enemies_alive) {
         for _ in 0..n {
@@ -77,6 +82,7 @@ fn spawn_enemies(mut commands: Commands, assets: Res<GameAssets>, enemies: Query
                 EnemyBundle::new(
                     Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
                     alpha + std::f32::consts::FRAC_PI_2,
+                    &level,
                     &assets,
                 ),
                 StateScoped(AppState::Game),
@@ -87,6 +93,7 @@ fn spawn_enemies(mut commands: Commands, assets: Res<GameAssets>, enemies: Query
 
 fn update(
     time: Res<Time>,
+    level: Res<Level>,
     mut enemies: Query<(&Transform, &mut SpaceShip, &mut Enemy), Without<Player>>,
     players: Query<&Transform, With<Player>>,
     homes: Query<(Entity, &Transform), With<Home>>,
@@ -128,15 +135,16 @@ fn update(
         };
         space_ship.throttle = distance > throttle_threshold;
         space_ship.brake = distance < brake_threshold;
-        space_ship.shoot = distance < shoot_threshold
+        space_ship.shoot = (distance < shoot_threshold
             && angle_between.abs() < 10.0
-            && time.elapsed_seconds() - enemy.last_shot > reload;
+            && time.elapsed_seconds() - enemy.last_shot > reload)
+            .then_some(level.enemy_damage);
         space_ship.shoot_missile_lock = match target {
             EnemyTarget::Player => None,
             EnemyTarget::Home => Some(home_entity),
         };
 
-        if space_ship.shoot {
+        if space_ship.shoot.is_some() {
             enemy.last_shot = time.elapsed_seconds();
         }
     }

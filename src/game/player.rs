@@ -1,5 +1,5 @@
 use super::{
-    ApplyVelocity, Health, SpaceShip, SpaceShipBundle, Steering, UpdateSpaceShip, Velocity,
+    ApplyVelocity, Health, Level, SpaceShip, SpaceShipBundle, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{assets::GameAssets, AppState};
 use bevy::prelude::*;
@@ -30,10 +30,10 @@ pub struct PlayerBundle {
 }
 
 impl PlayerBundle {
-    pub fn new(position: Vec3, rotation: f32, assets: &GameAssets) -> Self {
+    pub fn new(position: Vec3, rotation: f32, level: &Level, assets: &GameAssets) -> Self {
         Self {
             player: Player,
-            health: Health::new(10.0),
+            health: level.player_health,
             space_ship: SpaceShipBundle::new(
                 0b1,
                 Velocity(Vec3::ZERO),
@@ -50,6 +50,7 @@ impl PlayerBundle {
 fn update(
     mut space_ships: Query<&mut SpaceShip, With<Player>>,
     keyboard_input: Res<ButtonInput<KeyCode>>,
+    level: Res<Level>,
 ) {
     let Ok(mut space_ship) = space_ships.get_single_mut() else {
         return;
@@ -65,5 +66,7 @@ fn update(
     };
     space_ship.throttle = keyboard_input.pressed(KeyCode::KeyW);
     space_ship.brake = keyboard_input.pressed(KeyCode::KeyS);
-    space_ship.shoot = keyboard_input.just_pressed(KeyCode::Space);
+    space_ship.shoot = keyboard_input
+        .just_pressed(KeyCode::Space)
+        .then_some(level.player_damage);
 }

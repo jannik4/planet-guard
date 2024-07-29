@@ -8,6 +8,7 @@ mod assets;
 mod game;
 mod main_menu;
 mod splash_screen;
+mod ui;
 
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
@@ -49,6 +50,7 @@ pub fn build_app() -> App {
         splash_screen::SplashScreenPlugin,
         main_menu::MainMenuPlugin,
         game::GamePlugin,
+        ui::UiPlugin,
     ));
 
     app

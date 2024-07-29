@@ -1,5 +1,5 @@
-use crate::AppState;
-use bevy::{color::palettes::css::*, prelude::*};
+use crate::{game::Level, ui, AppState};
+use bevy::prelude::*;
 
 pub struct MainMenuPlugin;
 
@@ -14,44 +14,63 @@ impl Plugin for MainMenuPlugin {
     }
 }
 
+#[derive(Debug, Component)]
+enum ButtonAction {
+    Easy,
+    Medium,
+    Hard,
+}
+
 fn update(
-    mut gizmos: Gizmos,
-    time: Res<Time>,
-    mouse_input: Res<ButtonInput<MouseButton>>,
+    mut commands: Commands,
+    mut interaction_query: Query<
+        (&Interaction, &ButtonAction),
+        (Changed<Interaction>, With<Button>),
+    >,
     mut next_state: ResMut<NextState<AppState>>,
 ) {
-    if mouse_input.just_pressed(MouseButton::Left) {
-        next_state.set(AppState::Game);
+    for (interaction, action) in &mut interaction_query {
+        if *interaction == Interaction::Pressed {
+            match action {
+                ButtonAction::Easy => {
+                    commands.insert_resource(Level::easy());
+                    next_state.set(AppState::Game);
+                }
+                ButtonAction::Medium => {
+                    commands.insert_resource(Level::medium());
+                    next_state.set(AppState::Game);
+                }
+                ButtonAction::Hard => {
+                    commands.insert_resource(Level::hard());
+                    next_state.set(AppState::Game);
+                }
+            }
+        }
     }
-
-    let sin = time.elapsed_seconds().sin() * 50.;
-    gizmos.line_2d(Vec2::Y * -sin, Vec2::splat(-80.), RED);
-    gizmos.ray_2d(Vec2::Y * sin, Vec2::splat(80.), LIME);
-
-    gizmos
-        .grid_2d(
-            Vec2::ZERO,
-            0.0,
-            UVec2::new(16, 9),
-            Vec2::new(80., 80.),
-            // Dark gray
-            LinearRgba::gray(0.05),
-        )
-        .outer_edges();
-
-    // Triangle
-    gizmos.linestrip_gradient_2d([
-        (Vec2::Y * 300., BLUE),
-        (Vec2::new(-255., -155.), RED),
-        (Vec2::new(255., -155.), LIME),
-        (Vec2::Y * 300., BLUE),
-    ]);
-
-    gizmos.rect_2d(Vec2::ZERO, 0., Vec2::splat(650.), BLACK);
 }
 
 fn setup(mut commands: Commands) {
     commands.spawn((Camera2dBundle::default(), StateScoped(AppState::MainMenu)));
+    commands
+        .spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Percent(100.0),
+                    height: Val::Percent(100.0),
+                    align_items: AlignItems::Center,
+                    justify_content: JustifyContent::Center,
+                    flex_direction: FlexDirection::Column,
+                    ..default()
+                },
+                ..default()
+            },
+            StateScoped(AppState::MainMenu),
+        ))
+        .with_children(|parent| {
+            ui::spawn_button_with(parent, "Easy", ButtonAction::Easy);
+            ui::spawn_button_with(parent, "Medium", ButtonAction::Medium);
+            ui::spawn_button_with(parent, "Hard", ButtonAction::Hard);
+        });
 }
 
 fn cleanup(mut _commands: Commands) {}
