@@ -109,7 +109,7 @@ impl Level {
 
             home_orbit_time: 30.0,
 
-            home_health: Health::new(160.0),
+            home_health: Health::new(200.0),
             player_health: Health::new(50.0),
             enemy_health: Health::new(10.0),
 
