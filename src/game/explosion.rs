@@ -48,6 +48,7 @@ fn spawn_explosions(
     audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
+    let mut volume = 0.5;
     for spawn in events.read() {
         commands
             .spawn((
@@ -80,11 +81,13 @@ fn spawn_explosions(
             source: audio_assets.explosion_crunch_000.clone(),
             settings: PlaybackSettings {
                 mode: PlaybackMode::Despawn,
-                volume: Volume::new(0.5),
+                volume: Volume::new(volume),
                 speed: 2.0,
                 ..default()
             },
         });
+
+        volume *= 0.5;
     }
 }
 

@@ -37,6 +37,7 @@ fn home_laser(
     time: Res<Time>,
     mut home_laser: ResMut<HomeLaser>,
     homes: Query<&Transform, With<Home>>,
+    mut enemies: Query<(&mut Health, &Transform), With<Enemy>>,
 ) {
     if home_laser.timer.tick(time.delta()).finished() {
         return;
@@ -48,6 +49,11 @@ fn home_laser(
 
     let factor = home_laser.timer.fraction_remaining().powf(0.1);
     let color = Color::srgb(5.0 * factor, 0.1 * factor, 0.1 * factor);
+
+    for (mut enemy_health, enemy_transform) in &mut enemies {
+        enemy_health.set_dead();
+        home_laser.enemies.push(*enemy_transform);
+    }
 
     for enemy_transform in &home_laser.enemies {
         gizmos.line_2d(
