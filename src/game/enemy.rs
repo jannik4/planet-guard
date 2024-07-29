@@ -37,19 +37,22 @@ impl Plugin for EnemyPlugin {
 #[derive(Debug, Resource)]
 struct EnemySpawner {
     timer: Timer,
+    spawned_final_wave: bool,
 }
 
 #[derive(Debug, Component)]
 pub struct Enemy {
     target: Option<EnemyTarget>,
     last_shot: f32,
+    damage_multiplier: f32,
 }
 
 impl Enemy {
-    pub fn new() -> Self {
+    pub fn new(damage_multiplier: f32) -> Self {
         Self {
             target: None,
             last_shot: 0.0,
+            damage_multiplier,
         }
     }
 }
@@ -71,12 +74,13 @@ impl EnemyBundle {
     pub fn new(
         position: Vec3,
         rotation: f32,
+        damage_multiplier: f32,
         level: &Level,
         audio_assets: &AudioAssets,
         assets: &GameAssets,
     ) -> Self {
         Self {
-            enemy: Enemy::new(),
+            enemy: Enemy::new(damage_multiplier),
             health: level.enemy_health,
             space_ship: SpaceShipBundle::new(
                 0b10,
@@ -95,17 +99,36 @@ impl EnemyBundle {
 fn spawn_enemies(
     mut commands: Commands,
     mut enemy_spawner: ResMut<EnemySpawner>,
+    homes: Query<&Planet, With<Home>>,
     time: Res<Time>,
     level: Res<Level>,
     audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
+    let Ok(home) = homes.get_single() else {
+        return;
+    };
+
+    let mut spawn = vec![];
+
     if enemy_spawner.timer.tick(time.delta()).just_finished() {
+        spawn.push(1.0)
+    }
+
+    if !enemy_spawner.spawned_final_wave
+        && level.home_orbit_time - home.orbit_progress * level.home_orbit_time < 1.0
+    {
+        enemy_spawner.spawned_final_wave = true;
+        spawn.extend([0.0; 6]);
+    }
+
+    for damage_multiplier in spawn {
         let alpha = rand::thread_rng().gen_range(0.0..std::f32::consts::TAU);
         commands.spawn((
             EnemyBundle::new(
                 Vec3::new(f32::cos(alpha) * 512.0, f32::sin(alpha) * 512.0, 0.0),
                 alpha + std::f32::consts::FRAC_PI_2,
+                damage_multiplier,
                 &level,
                 &audio_assets,
                 &assets,
@@ -167,7 +190,7 @@ fn update(
         space_ship.shoot = (distance < shoot_threshold
             && angle_between.abs() < 10.0
             && time.elapsed_seconds() - enemy.last_shot > reload)
-            .then_some(level.enemy_damage);
+            .then_some(level.enemy_damage * enemy.damage_multiplier);
         space_ship.shoot_missile_lock = match target {
             EnemyTarget::Player => None,
             EnemyTarget::Home => Some(home_entity),
@@ -215,6 +238,7 @@ fn despawn_enemies(
 fn setup(mut commands: Commands, level: Res<Level>) {
     commands.insert_resource(EnemySpawner {
         timer: Timer::from_seconds(level.enemy_spawn_interval, TimerMode::Repeating),
+        spawned_final_wave: false,
     });
 }
 
