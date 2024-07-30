@@ -82,6 +82,33 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
         });
 
     commands.spawn((
+        TextBundle {
+            style: Style {
+                bottom: Val::Px(5.0),
+                right: Val::Px(5.0),
+                align_self: AlignSelf::FlexEnd,
+                justify_self: JustifySelf::End,
+                ..default()
+            },
+            text: Text {
+                justify: JustifyText::Right,
+                sections: vec![TextSection {
+                    value: option_env!("GAME_VERSION")
+                        .unwrap_or("dev-build")
+                        .to_string(),
+                    style: TextStyle {
+                        font_size: 10.0,
+                        ..default()
+                    },
+                }],
+                ..default()
+            },
+            ..default()
+        },
+        StateScoped(AppState::MainMenu),
+    ));
+
+    commands.spawn((
         MaterialMesh2dBundle {
             mesh: assets.background_mesh.clone(),
             material: assets.background_material.clone(),
