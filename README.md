@@ -1,4 +1,4 @@
-<img align="left" style="width:32px;margin-right:8px;margin-top:2px;" src="./media/logo-transparent.png">
+<img align="left" style="width:64px;" src="./media/logo-transparent.png">
 
 # Planet Guard
 
