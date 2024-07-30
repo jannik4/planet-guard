@@ -5,6 +5,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 mod assets;
+mod full_screen;
 mod game;
 mod main_menu;
 mod splash_screen;
@@ -51,6 +52,7 @@ pub fn build_app() -> App {
         main_menu::MainMenuPlugin,
         game::GamePlugin,
         ui::UiPlugin,
+        full_screen::FullScreenPlugin,
     ));
 
     app
