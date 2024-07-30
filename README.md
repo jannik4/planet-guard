@@ -2,7 +2,7 @@
 
 # Planet Guard
 
-Play the game on [itch.io](jannik4.itch.io/planet-guard)!
+Play the game on [itch.io](https://jannik4.itch.io/planet-guard)!
 
 ## Bevy Jam
 
