@@ -53,6 +53,7 @@ fn spawn(
                 ..default()
             },
             DespawnAfterTimer(Timer::from_seconds(1.5, TimerMode::Once)),
+            StateScoped(AppState::Game),
         ));
         next_progress.0 += 25;
     }
