@@ -35,7 +35,7 @@ pub fn build_app() -> App {
                 ..default()
             }),
     )
-    .insert_resource(ClearColor(Color::srgb(0.1, 0.1, 0.1)));
+    .insert_resource(ClearColor(Color::srgb(0.02, 0.02, 0.02)));
 
     app.init_state::<AppState>()
         .enable_state_scoped_entities::<AppState>()
