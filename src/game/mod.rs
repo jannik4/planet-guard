@@ -27,14 +27,10 @@ use self::{
 };
 use crate::{
     assets::{AudioAssets, GameAssets},
+    camera::GameCameraBundle,
     AppState,
 };
-use bevy::{
-    audio::PlaybackMode,
-    core_pipeline::{bloom::BloomSettings, tonemapping::Tonemapping},
-    prelude::*,
-    render::camera::ScalingMode,
-};
+use bevy::{audio::PlaybackMode, prelude::*};
 
 pub use self::level::Level;
 
@@ -91,24 +87,7 @@ fn setup(
     audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
-    commands.spawn((
-        Camera2dBundle {
-            camera: Camera {
-                hdr: true,
-                ..default()
-            },
-            projection: OrthographicProjection {
-                far: 1000.,
-                near: -1000.,
-                scaling_mode: ScalingMode::FixedVertical(1024.0),
-                ..Default::default()
-            },
-            tonemapping: Tonemapping::TonyMcMapface,
-            ..default()
-        },
-        BloomSettings::default(),
-        StateScoped(AppState::Game),
-    ));
+    commands.spawn((GameCameraBundle::default(), StateScoped(AppState::Game)));
 
     commands.spawn((
         PlayerBundle::new(

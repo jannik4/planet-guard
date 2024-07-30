@@ -5,6 +5,7 @@
 #![allow(clippy::too_many_arguments, clippy::type_complexity)]
 
 mod assets;
+mod camera;
 mod full_screen;
 mod game;
 mod main_menu;

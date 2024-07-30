@@ -1,8 +1,10 @@
 use crate::{
+    assets::GameAssets,
+    camera::GameCameraBundle,
     game::{GameState, Level},
     ui, AppState,
 };
-use bevy::prelude::*;
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct MainMenuPlugin;
 
@@ -56,8 +58,8 @@ fn update(
     }
 }
 
-fn setup(mut commands: Commands) {
-    commands.spawn((Camera2dBundle::default(), StateScoped(AppState::MainMenu)));
+fn setup(mut commands: Commands, assets: Res<GameAssets>) {
+    commands.spawn((GameCameraBundle::default(), StateScoped(AppState::MainMenu)));
     commands
         .spawn((
             NodeBundle {
@@ -78,6 +80,15 @@ fn setup(mut commands: Commands) {
             ui::spawn_button_with(parent, "Medium", ButtonAction::Medium);
             ui::spawn_button_with(parent, "Hard", ButtonAction::Hard);
         });
+
+    commands.spawn((
+        MaterialMesh2dBundle {
+            mesh: assets.background_mesh.clone(),
+            material: assets.background_material.clone(),
+            ..default()
+        },
+        StateScoped(AppState::Game),
+    ));
 }
 
 fn cleanup(mut _commands: Commands) {}
