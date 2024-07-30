@@ -97,7 +97,7 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
             builder.spawn(MaterialMesh2dBundle {
                 mesh: assets.planet_mesh.clone(),
                 material: assets.home_planet_material.clone(),
-                transform: Transform::from_translation(Vec3::new(120.0, 480.0, 0.0)),
+                transform: Transform::from_translation(Vec3::new(130.0, 480.0, 0.0)),
                 ..default()
             });
 
@@ -105,7 +105,7 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
             builder.spawn(MaterialMesh2dBundle {
                 mesh: assets.health_bar_mesh.clone(),
                 material: assets.health_bar_material_gray.clone(),
-                transform: Transform::from_translation(Vec3::new(0.0, 450.0, 0.0))
+                transform: Transform::from_translation(Vec3::new(0.0, 445.0, 0.0))
                     .with_rotation(Quat::from_rotation_z(std::f32::consts::FRAC_PI_2)),
                 ..default()
             });
@@ -113,7 +113,7 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
                 MaterialMesh2dBundle {
                     mesh: assets.health_bar_mesh.clone(),
                     material: assets.health_bar_material_green.clone(),
-                    transform: Transform::from_translation(Vec3::new(0.0, 450.0, 1.0))
+                    transform: Transform::from_translation(Vec3::new(0.0, 445.0, 1.0))
                         .with_rotation(Quat::from_rotation_z(std::f32::consts::FRAC_PI_2)),
                     ..default()
                 },
@@ -122,7 +122,7 @@ fn setup(mut commands: Commands, assets: Res<GameAssets>) {
             builder.spawn(MaterialMesh2dBundle {
                 mesh: assets.space_ship_mesh.clone(),
                 material: assets.player_space_ship_material.clone(),
-                transform: Transform::from_translation(Vec3::new(120.0, 450.0, 0.0)),
+                transform: Transform::from_translation(Vec3::new(130.0, 445.0, 0.0)),
                 ..default()
             });
         });
