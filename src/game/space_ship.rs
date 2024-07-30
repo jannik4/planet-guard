@@ -1,5 +1,3 @@
-use std::u32;
-
 use super::{
     ApplyVelocity, BulletBundle, BulletMissileLock, Collider, KeepInMap, MaxVelocity, Velocity,
 };
