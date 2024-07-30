@@ -5,6 +5,7 @@ mod explosion;
 mod game_ui;
 mod gravity;
 mod health;
+mod home;
 mod level;
 mod planet;
 mod player;
@@ -19,6 +20,7 @@ use self::{
     explosion::*,
     gravity::*,
     health::*, // enemy::*,
+    home::*,
     planet::*,
     player::*,
     space_ship::*,
@@ -50,6 +52,7 @@ impl Plugin for GamePlugin {
             gravity::GravityPlugin,
             star::StarPlugin,
             planet::PlanetPlugin,
+            home::HomePlugin,
             bullet::BulletPlugin,
             space_ship::SpaceShipPlugin,
             player::PlayerPlugin,
@@ -76,9 +79,6 @@ pub struct Collider {
     pub radius: f32,
     pub group: u32,
 }
-
-#[derive(Debug, Component)]
-pub struct Home;
 
 fn setup(
     mut commands: Commands,

@@ -1,6 +1,6 @@
 use super::{
-    ApplyVelocity, Collider, GameState, Health, Level, Planet, SpaceShip, SpaceShipBundle,
-    SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
+    ApplyVelocity, Collider, ExplosionKind, GameState, Health, Level, Planet, SpaceShip,
+    SpaceShipBundle, SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{
     assets::{AudioAssets, GameAssets},
@@ -92,12 +92,7 @@ fn update(
                 .just_pressed(KeyCode::Space)
                 .then_some(level.player_damage);
         }
-        GameState::GameOver => {
-            space_ship.steering = Steering::None;
-            space_ship.throttle = false;
-            space_ship.brake = true;
-            space_ship.shoot = None;
-        }
+        GameState::GameOver => space_ship.stop(),
     }
 }
 
@@ -137,6 +132,7 @@ fn dead(
             explosions.send(SpawnExplosion {
                 position: transform.translation,
                 material: space_ship.material(),
+                kind: ExplosionKind::Small,
             });
 
             let respawn_pos = 'respawn: loop {

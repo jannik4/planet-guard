@@ -44,8 +44,9 @@ fn update(
     let Ok(player) = players.get_single() else {
         return;
     };
-    let Ok(home) = homes.get_single() else {
-        return;
+    let home_health_fraction = match homes.get_single() {
+        Ok(home) => home.fraction(),
+        Err(_) => 0.0,
     };
 
     health_bar_player.0 = f32::lerp(
@@ -58,7 +59,7 @@ fn update(
 
     health_bar_home.0 = f32::lerp(
         health_bar_home.0,
-        home.fraction(),
+        home_health_fraction,
         1.0 - f32::exp(f32::ln(0.9) * 60.0 * time.delta_seconds()),
     );
     health_bar_home_transform.translation.x = 100.0 - 200.0 * health_bar_home.0 / 2.0;

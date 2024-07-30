@@ -28,6 +28,64 @@ impl Plugin for ExplosionPlugin {
 pub struct SpawnExplosion {
     pub position: Vec3,
     pub material: Handle<ColorMaterial>,
+    pub kind: ExplosionKind,
+}
+
+#[derive(Debug)]
+pub enum ExplosionKind {
+    Small,
+    Large,
+}
+
+impl ExplosionKind {
+    fn particle_count(&self) -> usize {
+        match self {
+            ExplosionKind::Small => 10,
+            ExplosionKind::Large => 12,
+        }
+    }
+
+    fn initial_speed(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 64.0,
+            ExplosionKind::Large => 40.0,
+        }
+    }
+
+    fn time_to_live(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 0.3,
+            ExplosionKind::Large => 0.7,
+        }
+    }
+
+    fn size(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 1.0,
+            ExplosionKind::Large => 1.5,
+        }
+    }
+
+    fn audio_source(&self, audio_assets: &AudioAssets) -> Handle<AudioSource> {
+        match self {
+            ExplosionKind::Small => audio_assets.explosion_crunch_000.clone(),
+            ExplosionKind::Large => audio_assets.low_frequency_explosion_000.clone(),
+        }
+    }
+
+    fn audio_volume(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 0.5,
+            ExplosionKind::Large => 2.0,
+        }
+    }
+
+    fn audio_speed(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 2.0,
+            ExplosionKind::Large => 1.0,
+        }
+    }
 }
 
 #[derive(Debug, Component)]
@@ -48,21 +106,26 @@ fn spawn_explosions(
     audio_assets: Res<AudioAssets>,
     assets: Res<GameAssets>,
 ) {
-    let mut volume = 0.5;
+    // The volume of the explosion sound is reduced by 50% for each subsequent explosion in the same frame.
+    let mut volume_multiplier = 1.0;
+
     for spawn in events.read() {
         commands
             .spawn((
                 SpatialBundle::default(),
                 Explosion {
-                    timer: Timer::from_seconds(0.3, TimerMode::Once),
+                    timer: Timer::from_seconds(spawn.kind.time_to_live(), TimerMode::Once),
                 },
                 StateScoped(AppState::Game),
             ))
             .with_children(|builder| {
-                for i in 0..10 {
-                    let alpha = (i as f32 / 10.0) * std::f32::consts::TAU;
-                    let velocity =
-                        Velocity(Vec3::new(f32::cos(alpha), f32::sin(alpha), 0.0) * 64.0);
+                for i in 0..spawn.kind.particle_count() {
+                    let alpha =
+                        (i as f32 / spawn.kind.particle_count() as f32) * std::f32::consts::TAU;
+                    let velocity = Velocity(
+                        Vec3::new(f32::cos(alpha), f32::sin(alpha), 0.0)
+                            * spawn.kind.initial_speed(),
+                    );
                     builder.spawn((
                         velocity,
                         GravityMultiplier(10.0),
@@ -70,6 +133,7 @@ fn spawn_explosions(
                             mesh: assets.explosion_mesh.clone(),
                             material: spawn.material.clone(),
                             transform: Transform::from_translation(spawn.position)
+                                .with_scale(Vec3::splat(spawn.kind.size()))
                                 .with_rotation(rot_from_velocity(*velocity)),
 
                             ..default()
@@ -78,16 +142,16 @@ fn spawn_explosions(
                 }
             });
         commands.spawn(AudioBundle {
-            source: audio_assets.explosion_crunch_000.clone(),
+            source: spawn.kind.audio_source(&audio_assets),
             settings: PlaybackSettings {
                 mode: PlaybackMode::Despawn,
-                volume: Volume::new(volume),
-                speed: 2.0,
+                volume: Volume::new(volume_multiplier * spawn.kind.audio_volume()),
+                speed: spawn.kind.audio_speed(),
                 ..default()
             },
         });
 
-        volume *= 0.5;
+        volume_multiplier *= 0.5;
     }
 }
 

@@ -38,6 +38,8 @@ pub struct AudioAssets {
 
     #[asset(path = "explosionCrunch_000.ogg")]
     pub explosion_crunch_000: Handle<AudioSource>,
+    #[asset(path = "lowFrequency_explosion_000.ogg")]
+    pub low_frequency_explosion_000: Handle<AudioSource>,
 
     #[asset(path = "thrusterFire_000.ogg")]
     pub thruster_fire_000: Handle<AudioSource>,

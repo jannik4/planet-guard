@@ -12,14 +12,14 @@ impl Plugin for LevelPlugin {
 
         app.add_systems(
             Update,
-            check_if_won
+            check_if_ended
                 .run_if(in_state(AppState::Game))
                 .run_if(in_state(GameState::Running)),
         );
         app.add_systems(
             Update,
             home_laser
-                .after(check_if_won)
+                .after(check_if_ended)
                 .run_if(in_state(AppState::Game))
                 .run_if(in_state(GameState::GameWon)),
         );
@@ -64,7 +64,7 @@ fn home_laser(
     }
 }
 
-fn check_if_won(
+fn check_if_ended(
     mut commands: Commands,
     mut home_laser: ResMut<HomeLaser>,
     homes: Query<(&Planet, &Health), (With<Home>, Without<Enemy>)>,
@@ -72,29 +72,42 @@ fn check_if_won(
     mut _bullets: Query<&mut Bullet>,
     mut next_state_game: ResMut<NextState<GameState>>,
 ) {
-    let Ok((home_planet, home_health)) = homes.get_single() else {
-        return;
+    let state = match homes.get_single() {
+        Ok((home_planet, home_health)) => {
+            if home_health.current() <= 0.0 {
+                GameState::GameOver
+            } else if home_planet.orbit_progress >= 1.0 {
+                GameState::GameWon
+            } else {
+                GameState::Running
+            }
+        }
+        Err(_) => GameState::GameOver,
     };
 
-    if home_health.current() <= 0.0 {
-        next_state_game.set(GameState::GameOver);
-        spawn_text(
-            &mut commands,
-            "YOU LOSE!".to_string(),
-            Color::srgb(8.0, 0.6, 0.6),
-        );
-    } else if home_planet.orbit_progress >= 1.0 {
-        next_state_game.set(GameState::GameWon);
-        spawn_text(
-            &mut commands,
-            "YOU WIN!".to_string(),
-            Color::srgb(0.9, 8.0, 0.9),
-        );
-
-        for (mut enemy_health, enemy_transform) in &mut enemies {
-            enemy_health.set_dead();
-            home_laser.enemies.push(*enemy_transform);
+    match state {
+        GameState::GameOver => {
+            next_state_game.set(GameState::GameOver);
+            spawn_text(
+                &mut commands,
+                "YOU LOSE!".to_string(),
+                Color::srgb(8.0, 0.6, 0.6),
+            );
         }
+        GameState::GameWon => {
+            next_state_game.set(GameState::GameWon);
+            spawn_text(
+                &mut commands,
+                "YOU WIN!".to_string(),
+                Color::srgb(0.9, 8.0, 0.9),
+            );
+
+            for (mut enemy_health, enemy_transform) in &mut enemies {
+                enemy_health.set_dead();
+                home_laser.enemies.push(*enemy_transform);
+            }
+        }
+        GameState::Running => (),
     }
 }
 

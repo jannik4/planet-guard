@@ -1,6 +1,6 @@
 use super::{
-    ApplyVelocity, Collider, GameState, Health, Home, Level, Planet, Player, SpaceShip,
-    SpaceShipBundle, SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
+    ApplyVelocity, Collider, ExplosionKind, GameState, Health, Home, Level, Planet, Player,
+    SpaceShip, SpaceShipBundle, SpawnExplosion, Star, Steering, UpdateSpaceShip, Velocity,
 };
 use crate::{
     assets::{AudioAssets, GameAssets},
@@ -149,6 +149,9 @@ fn update(
         return;
     };
     let Ok((home_entity, home)) = homes.get_single() else {
+        for (_, mut space_ship, _) in &mut enemies {
+            space_ship.stop();
+        }
         return;
     };
 
@@ -229,6 +232,7 @@ fn despawn_enemies(
             explosions.send(SpawnExplosion {
                 position: transform.translation,
                 material: space_ship.material(),
+                kind: ExplosionKind::Small,
             });
             commands.entity(entity).despawn();
         }

@@ -45,6 +45,14 @@ impl SpaceShip {
     pub fn material(&self) -> Handle<ColorMaterial> {
         self.material.clone()
     }
+
+    pub fn stop(&mut self) {
+        self.throttle = false;
+        self.brake = true;
+        self.steering = Steering::None;
+        self.shoot = None;
+        self.shoot_missile_lock = None;
+    }
 }
 
 #[derive(Debug)]
