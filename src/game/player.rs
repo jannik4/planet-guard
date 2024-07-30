@@ -61,7 +61,7 @@ impl PlayerBundle {
 
 fn update(
     mut players: Query<(&mut SpaceShip, &mut Transform), With<Player>>,
-    keyboard_input: Res<ButtonInput<KeyCode>>,
+    input: Res<ButtonInput<KeyCode>>,
     time: Res<Time>,
     game_state: Res<State<GameState>>,
     level: Res<Level>,
@@ -79,16 +79,16 @@ fn update(
     match **game_state {
         GameState::Running | GameState::GameWon => {
             space_ship.steering = match (
-                keyboard_input.pressed(KeyCode::KeyA),
-                keyboard_input.pressed(KeyCode::KeyD),
+                input.pressed(KeyCode::KeyA) || input.pressed(KeyCode::ArrowLeft),
+                input.pressed(KeyCode::KeyD) || input.pressed(KeyCode::ArrowRight),
             ) {
                 (true, false) => Steering::Left,
                 (false, true) => Steering::Right,
                 _ => Steering::None,
             };
-            space_ship.throttle = keyboard_input.pressed(KeyCode::KeyW);
-            space_ship.brake = keyboard_input.pressed(KeyCode::KeyS);
-            space_ship.shoot = keyboard_input
+            space_ship.throttle = input.pressed(KeyCode::KeyW) || input.pressed(KeyCode::ArrowUp);
+            space_ship.brake = input.pressed(KeyCode::KeyS) || input.pressed(KeyCode::ArrowDown);
+            space_ship.shoot = input
                 .just_pressed(KeyCode::Space)
                 .then_some(level.player_damage);
         }
