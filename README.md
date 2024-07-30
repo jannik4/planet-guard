@@ -20,6 +20,7 @@ Your planet (blue) is under attack by alien forces, but hope is not lost. The sc
 - **Shoot**: <kbd>Space</kbd>
 - **Quit to Menu**: Hold <kbd>ESC</kbd> or <kbd>Backspace</kbd>
 - **Fullscreen**: <kbd>F11</kbd>
+- **Mute**: <kbd>M</kbd>
 
 ## Audio Assets
 
