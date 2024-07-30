@@ -125,6 +125,7 @@ impl SpaceShipBundle {
 fn update(
     mut commands: Commands,
     time: Res<Time>,
+    global_volume: Res<GlobalVolume>,
     mut space_ships: Query<(
         &Collider,
         &mut SpaceShip,
@@ -191,7 +192,7 @@ fn update(
         transform.rotation = space_ship.rot_quat();
 
         if let Some(audio) = audio {
-            let volume = if collider.group & 0b1 != 0 {
+            let mut volume = if collider.group & 0b1 != 0 {
                 // Player
                 if space_ship.throttle {
                     0.4
@@ -206,6 +207,9 @@ fn update(
                     0.0
                 }
             };
+
+            // TODO: Hack, since audio.volume seems to be absolute and not relative to global volume.
+            volume *= *global_volume.volume;
 
             if audio.volume() != volume {
                 audio.set_volume(volume);

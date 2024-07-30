@@ -8,6 +8,7 @@ mod assets;
 mod full_screen;
 mod game;
 mod main_menu;
+mod mute;
 mod splash_screen;
 mod ui;
 
@@ -53,6 +54,7 @@ pub fn build_app() -> App {
         game::GamePlugin,
         ui::UiPlugin,
         full_screen::FullScreenPlugin,
+        mute::MutePlugin,
     ));
 
     app
