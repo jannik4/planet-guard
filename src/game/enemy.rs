@@ -232,7 +232,7 @@ fn despawn_enemies(
             explosions.send(SpawnExplosion {
                 position: transform.translation,
                 material: space_ship.material(),
-                kind: ExplosionKind::Small,
+                kind: ExplosionKind::Medium,
             });
             commands.entity(entity).despawn();
         }

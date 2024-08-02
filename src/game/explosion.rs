@@ -34,55 +34,71 @@ pub struct SpawnExplosion {
 #[derive(Debug)]
 pub enum ExplosionKind {
     Small,
+    Medium,
     Large,
 }
 
 impl ExplosionKind {
     fn particle_count(&self) -> usize {
         match self {
-            ExplosionKind::Small => 10,
+            ExplosionKind::Small => 4,
+            ExplosionKind::Medium => 10,
             ExplosionKind::Large => 12,
         }
     }
 
     fn initial_speed(&self) -> f32 {
         match self {
-            ExplosionKind::Small => 64.0,
+            ExplosionKind::Small => 20.0,
+            ExplosionKind::Medium => 64.0,
             ExplosionKind::Large => 40.0,
         }
     }
 
     fn time_to_live(&self) -> f32 {
         match self {
-            ExplosionKind::Small => 0.3,
+            ExplosionKind::Small => 0.25,
+            ExplosionKind::Medium => 0.3,
             ExplosionKind::Large => 0.7,
         }
     }
 
     fn size(&self) -> f32 {
         match self {
-            ExplosionKind::Small => 1.0,
+            ExplosionKind::Small => 1.1,
+            ExplosionKind::Medium => 1.0,
             ExplosionKind::Large => 1.5,
+        }
+    }
+
+    fn gravity_multiplier(&self) -> f32 {
+        match self {
+            ExplosionKind::Small => 0.0,
+            ExplosionKind::Medium => 10.0,
+            ExplosionKind::Large => 10.0,
         }
     }
 
     fn audio_source(&self, audio_assets: &AudioAssets) -> Handle<AudioSource> {
         match self {
-            ExplosionKind::Small => audio_assets.explosion_crunch_000.clone(),
+            ExplosionKind::Small => audio_assets.impact_metal_004.clone(),
+            ExplosionKind::Medium => audio_assets.explosion_crunch_000.clone(),
             ExplosionKind::Large => audio_assets.low_frequency_explosion_000.clone(),
         }
     }
 
     fn audio_volume(&self) -> f32 {
         match self {
-            ExplosionKind::Small => 0.5,
+            ExplosionKind::Small => 0.45,
+            ExplosionKind::Medium => 0.5,
             ExplosionKind::Large => 3.0,
         }
     }
 
     fn audio_speed(&self) -> f32 {
         match self {
-            ExplosionKind::Small => 2.0,
+            ExplosionKind::Small => 4.0,
+            ExplosionKind::Medium => 2.0,
             ExplosionKind::Large => 1.0,
         }
     }
@@ -128,7 +144,7 @@ fn spawn_explosions(
                     );
                     builder.spawn((
                         velocity,
-                        GravityMultiplier(10.0),
+                        GravityMultiplier(spawn.kind.gravity_multiplier()),
                         MaterialMesh2dBundle {
                             mesh: assets.explosion_mesh.clone(),
                             material: spawn.material.clone(),

@@ -1,13 +1,9 @@
-use super::{ApplyVelocity, Collider, GameState, GravityMultiplier, Health, Velocity};
-use crate::{
-    assets::{AudioAssets, GameAssets},
-    AppState,
+use super::{
+    ApplyVelocity, Collider, ExplosionKind, GameState, GravityMultiplier, Health, SpawnExplosion,
+    Velocity,
 };
-use bevy::{
-    audio::{PlaybackMode, Volume},
-    prelude::*,
-    sprite::MaterialMesh2dBundle,
-};
+use crate::{assets::GameAssets, AppState};
+use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
 pub struct BulletPlugin;
 
@@ -86,13 +82,14 @@ fn update(
         Option<&BulletMissileLock>,
         &mut Velocity,
         &mut Transform,
+        &Handle<ColorMaterial>,
     )>,
     mut objects: Query<(&Transform, &Collider, Option<&mut Health>), Without<Bullet>>,
     targets: Query<&Transform, Without<Bullet>>,
     mut commands: Commands,
-    audio_assets: Res<AudioAssets>,
+    mut explosions: EventWriter<SpawnExplosion>,
 ) {
-    for (entity, mut bullet, lock, mut velocity, mut transform) in &mut bullets {
+    for (entity, mut bullet, lock, mut velocity, mut transform, material) in &mut bullets {
         bullet.time_to_live -= time.delta_seconds();
         if let Some(lock) = lock {
             if let Ok(target) = targets.get(lock.target) {
@@ -118,19 +115,23 @@ fn update(
             {
                 if **game_state == GameState::Running {
                     if let Some(mut health) = obj_health {
-                        if !(obj_collider.group & 0b100 != 0 && bullet.collider_filter & 0b1 == 0) {
+                        let spawn_explosion = if !(obj_collider.group & 0b100 != 0
+                            && bullet.collider_filter & 0b1 == 0)
+                        {
                             health.damage(bullet.damage);
-                        }
+                            health.current() > 0.0
+                        } else {
+                            false
+                        };
 
-                        commands.spawn(AudioBundle {
-                            source: audio_assets.impact_metal_004.clone(),
-                            settings: PlaybackSettings {
-                                mode: PlaybackMode::Despawn,
-                                volume: Volume::new(0.35),
-                                speed: 4.0,
-                                ..default()
-                            },
-                        });
+                        if spawn_explosion {
+                            explosions.send(SpawnExplosion {
+                                position: (transform.translation + obj_transform.translation) / 2.0
+                                    + Vec3::Z,
+                                material: material.clone(),
+                                kind: ExplosionKind::Small,
+                            });
+                        }
                     }
                 }
                 despawn = true;

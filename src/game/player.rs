@@ -132,7 +132,7 @@ fn dead(
             explosions.send(SpawnExplosion {
                 position: transform.translation,
                 material: space_ship.material(),
-                kind: ExplosionKind::Small,
+                kind: ExplosionKind::Medium,
             });
 
             let respawn_pos = 'respawn: loop {
