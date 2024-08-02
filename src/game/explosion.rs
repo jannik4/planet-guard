@@ -76,7 +76,7 @@ impl ExplosionKind {
     fn audio_volume(&self) -> f32 {
         match self {
             ExplosionKind::Small => 0.5,
-            ExplosionKind::Large => 2.0,
+            ExplosionKind::Large => 3.0,
         }
     }
 
