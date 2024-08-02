@@ -19,6 +19,9 @@ impl Plugin for GameUiPlugin {
 }
 
 #[derive(Debug, Component)]
+struct Root;
+
+#[derive(Debug, Component)]
 struct HealthBarHome(f32);
 
 #[derive(Debug, Component)]
@@ -26,11 +29,19 @@ struct HealthBarPlayer(f32);
 
 fn update(
     time: Res<Time>,
+    mut root: Query<&mut Transform, (With<Root>, Without<HealthBarHome>, Without<HealthBarPlayer>)>,
     mut health_bar_player: Query<(&mut Transform, &mut HealthBarPlayer), Without<HealthBarHome>>,
     mut health_bar_home: Query<(&mut Transform, &mut HealthBarHome), Without<HealthBarPlayer>>,
+    projection: Query<&OrthographicProjection>,
     players: Query<&Health, With<Player>>,
     homes: Query<&Health, With<Home>>,
 ) {
+    // Update root
+    let mut root_transform = root.single_mut();
+    let projection = projection.single();
+    root_transform.translation.x = projection.area.max.x - 168.0;
+
+    // Get health bars
     let Ok((mut health_bar_player_transform, mut health_bar_player)) =
         health_bar_player.get_single_mut()
     else {
@@ -41,6 +52,7 @@ fn update(
         return;
     };
 
+    // Get health
     let Ok(player) = players.get_single() else {
         return;
     };
@@ -49,6 +61,7 @@ fn update(
         Err(_) => 0.0,
     };
 
+    // Update health bars
     health_bar_player.0 = f32::lerp(
         health_bar_player.0,
         player.fraction(),
@@ -68,13 +81,7 @@ fn update(
 
 fn setup(mut commands: Commands, assets: Res<GameAssets>) {
     commands
-        .spawn((
-            SpatialBundle {
-                transform: Transform::from_translation(Vec3::new(612.0, 0.0, 0.0)),
-                ..default()
-            },
-            StateScoped(AppState::Game),
-        ))
+        .spawn((SpatialBundle::default(), Root, StateScoped(AppState::Game)))
         .with_children(|builder| {
             // Planet
             builder.spawn(MaterialMesh2dBundle {
