@@ -13,6 +13,9 @@ mod mute;
 mod splash_screen;
 mod ui;
 
+#[cfg(feature = "dev")]
+mod dev;
+
 use bevy::{asset::AssetMetaCheck, prelude::*};
 use bevy_asset_loader::loading_state::{LoadingState, LoadingStateAppExt};
 
@@ -56,6 +59,8 @@ pub fn build_app() -> App {
         ui::UiPlugin,
         full_screen::FullScreenPlugin,
         mute::MutePlugin,
+        #[cfg(feature = "dev")]
+        dev::DevPlugin,
     ));
 
     app
