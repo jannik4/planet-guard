@@ -101,7 +101,7 @@ fn update(
                 **velocity = Vec3::lerp(
                     **velocity,
                     target_velocity,
-                    1.0 - f32::exp(f32::ln(0.9) * 60.0 * time.delta_seconds()),
+                    1.0 - f32::exp(f32::ln(0.95) * 60.0 * time.delta_seconds()),
                 );
             }
         }
