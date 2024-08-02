@@ -1,4 +1,4 @@
-use super::{ApplyVelocity, Health, Home, Player};
+use super::{Health, Home, Player};
 use crate::{assets::GameAssets, AppState};
 use bevy::{prelude::*, sprite::MaterialMesh2dBundle};
 
@@ -13,7 +13,7 @@ impl Plugin for GameUiPlugin {
         // Update
         app.add_systems(
             Update,
-            update.after(ApplyVelocity).run_if(in_state(AppState::Game)),
+            (update, update_root).run_if(in_state(AppState::Game)),
         );
     }
 }
@@ -29,18 +29,11 @@ struct HealthBarPlayer(f32);
 
 fn update(
     time: Res<Time>,
-    mut root: Query<&mut Transform, (With<Root>, Without<HealthBarHome>, Without<HealthBarPlayer>)>,
     mut health_bar_player: Query<(&mut Transform, &mut HealthBarPlayer), Without<HealthBarHome>>,
     mut health_bar_home: Query<(&mut Transform, &mut HealthBarHome), Without<HealthBarPlayer>>,
-    projection: Query<&OrthographicProjection>,
     players: Query<&Health, With<Player>>,
     homes: Query<&Health, With<Home>>,
 ) {
-    // Update root
-    let mut root_transform = root.single_mut();
-    let projection = projection.single();
-    root_transform.translation.x = projection.area.max.x - 168.0;
-
     // Get health bars
     let Ok((mut health_bar_player_transform, mut health_bar_player)) =
         health_bar_player.get_single_mut()
@@ -79,9 +72,31 @@ fn update(
     health_bar_home_transform.scale.y = health_bar_home.0;
 }
 
+fn update_root(
+    mut root: Query<(&mut Transform, &mut Visibility), With<Root>>,
+    projection: Query<&OrthographicProjection>,
+) {
+    let (mut root_transform, mut root_visibility) = root.single_mut();
+    let projection = projection.single();
+    root_transform.translation.x = projection.area.max.x - 168.0;
+
+    // Make sure area is "valid" (already calculated)
+    *root_visibility = match projection.area.width() > 32.0 {
+        true => Visibility::Inherited,
+        false => Visibility::Hidden,
+    };
+}
+
 fn setup(mut commands: Commands, assets: Res<GameAssets>) {
     commands
-        .spawn((SpatialBundle::default(), Root, StateScoped(AppState::Game)))
+        .spawn((
+            SpatialBundle {
+                visibility: Visibility::Hidden,
+                ..default()
+            },
+            Root,
+            StateScoped(AppState::Game),
+        ))
         .with_children(|builder| {
             // Planet
             builder.spawn(MaterialMesh2dBundle {
