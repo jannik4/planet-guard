@@ -203,7 +203,7 @@ fn update(
             let mut volume = if collider.group & 0b1 != 0 {
                 // Player
                 if space_ship.throttle {
-                    0.4
+                    0.45
                 } else {
                     0.0
                 }
