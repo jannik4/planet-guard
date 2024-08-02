@@ -45,12 +45,13 @@ pub fn spawn_button_with<C: Component>(
                     width: Val::Px(300.0),
                     height: Val::Px(60.0),
                     margin: UiRect::all(Val::Px(10.0)),
-                    border: UiRect::all(Val::Px(5.0)),
+                    border: UiRect::all(Val::Px(3.0)),
                     justify_content: JustifyContent::Center,
                     align_items: AlignItems::Center,
                     ..default()
                 },
                 border_color: BorderColor(Color::srgb(0.35, 0.35, 0.35)),
+                border_radius: BorderRadius::all(Val::Px(8.0)),
                 background_color: NORMAL_BUTTON.into(),
                 ..default()
             },
